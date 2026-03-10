@@ -519,21 +519,20 @@ input[type=range]::-webkit-slider-thumb{
   cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;
 }
 
-.ar-mode-bar{
+}
+
+.ar-gesture-hint{
   position:absolute;top:62px;left:50%;transform:translateX(-50%);
-  display:flex;gap:4px;
-  background:rgba(0,0,0,.62);backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.1);border-radius:40px;padding:4px;z-index:10;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.1);border-radius:40px;
+  padding:7px 16px;z-index:10;
+  font-family:'Space Mono',monospace;font-size:.58rem;
+  color:rgba(255,255,255,.6);white-space:nowrap;
+  transition:opacity .6s;
 }
-.ar-mode-btn{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:8px 13px;border-radius:30px;
-  background:transparent;border:none;color:rgba(255,255,255,.5);cursor:pointer;
-  font-family:'Space Mono',monospace;transition:all .2s;
-}
-.ar-mode-btn .mode-icon{ font-size:.95rem;line-height:1; }
-.ar-mode-btn .mode-label{ font-size:.52rem;letter-spacing:.04em; }
-.ar-mode-btn.active{ background:var(--accent);color:#000;box-shadow:0 0 12px rgba(0,255,224,.45); }
+.ar-gesture-hint.hide{ opacity:0;pointer-events:none; }
+.hint-sep{ color:rgba(255,255,255,.2); }
 
 .ar-bottom{
   position:absolute;bottom:0;left:0;right:0;
@@ -811,11 +810,12 @@ input[type=range]::-webkit-slider-thumb{
     <button class="btn-ar-icon" id="btnArClose">✕</button>
   </div>
 
-  <div class="ar-mode-bar" id="arModeBar">
-    <button class="ar-mode-btn active" data-mode="place" id="modePlace"><span class="mode-icon">＋</span><span class="mode-label">配置</span></button>
-    <button class="ar-mode-btn" data-mode="move"   id="modeMove">  <span class="mode-icon">✥</span><span class="mode-label">移動</span></button>
-    <button class="ar-mode-btn" data-mode="scale"  id="modeScale"> <span class="mode-icon">⤡</span><span class="mode-label">スケール</span></button>
-    <button class="ar-mode-btn" data-mode="delete" id="modeDelete"><span class="mode-icon">🗑</span><span class="mode-label">削除</span></button>
+  <div class="ar-gesture-hint" id="arGestureHint">
+    <span>＋ タップで追加</span>
+    <span class="hint-sep">｜</span>
+    <span>長押しで移動</span>
+    <span class="hint-sep">｜</span>
+    <span>ピンチでサイズ</span>
   </div>
 
   <div class="ar-bottom">
@@ -829,7 +829,7 @@ input[type=range]::-webkit-slider-thumb{
         <button class="btn-ar-ctrl" id="btnRecord"><span class="rec-dot"></span> 録画開始</button>
         <button class="btn-ar-ctrl secondary" id="btnScreenshot">📸 写真</button>
       </div>
-      <div class="ar-place-hint" id="arPlaceHint">タップして画像を配置</div>
+      <div class="ar-place-hint" id="arPlaceHint">タップで追加 / 長押しで移動 / ピンチでサイズ変更</div>
       <div class="ar-ctrl-right">
         <button class="btn-ar-ctrl secondary" id="btnUndo">↩ 戻す</button>
         <div class="obj-count" id="objCount">0 個</div>
@@ -1252,9 +1252,9 @@ const ar = {
   stream: null,
   animFrame: null,
   recAnimFrame: null,
-  objects: [],          // placed objects [{id,x,y,size,rot,bobOffset,img}]
+  objects: [],
   selectedId: null,
-  mode: 'place',        // place | move | scale | delete
+  mode: 'unified',   // 統合ジェスチャーモード
   time: 0,
   // Recording
   mediaRecorder: null,
@@ -1262,15 +1262,18 @@ const ar = {
   recStartTime: null,
   recTimerInterval: null,
   isRecording: false,
-  // Drag state
+  // Long-press drag
   dragObj: null,
   dragStartX: 0,
   dragStartY: 0,
   dragObjStartX: 0,
   dragObjStartY: 0,
-  // Scale pinch
+  longPressTimer: null,
+  isDragging: false,
+  // Pinch scale
   pinchDist: null,
   pinchObjSize: null,
+  pinchObj: null,
 };
 
 let arObjIdCounter = 0;
@@ -1288,10 +1291,23 @@ async function launchAR(){
     const video = document.getElementById('arVideo');
     video.srcObject = stream;
     await video.play();
+
+    // ── 起動時に画面中央へ自動配置 ──
+    ar.objects = [];
+    setTimeout(()=>{
+      const W = window.innerWidth, H = window.innerHeight;
+      addObject(W/2, H/2);
+      // ヒントを3秒後にフェードアウト
+      setTimeout(()=>{
+        const hint = document.getElementById('arGestureHint');
+        if(hint) hint.classList.add('hide');
+      }, 3500);
+    }, 400);
+
     initAREvents();
     renderAR();
     updateObjCount();
-    toast('📱 ARモード開始 — タップして画像を配置');
+    toast('📱 AR起動 — 長押しで移動 / ピンチでサイズ変更');
   } catch(e){
     toast('カメラの許可が必要です');
     overlay.style.display = 'none';
@@ -1300,26 +1316,17 @@ async function launchAR(){
 
 function closeAR(){
   stopRecording();
+  if(ar.longPressTimer){ clearTimeout(ar.longPressTimer); ar.longPressTimer=null; }
   if(ar.stream){ ar.stream.getTracks().forEach(t=>t.stop()); ar.stream=null; state.arStream=null; }
   if(ar.animFrame) cancelAnimationFrame(ar.animFrame);
   document.getElementById('arOverlay').style.display = 'none';
+  // ヒントを次回起動時に再表示
+  const hint = document.getElementById('arGestureHint');
+  if(hint) hint.classList.remove('hide');
   ar.objects = [];
   refreshObjStrip();
   updateObjCount();
 }
-
-// ── Mode buttons ──
-document.querySelectorAll('.ar-mode-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.ar-mode-btn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    ar.mode = btn.dataset.mode;
-    const hints = {place:'タップして画像を配置',move:'オブジェクトをドラッグ',scale:'ピンチでサイズ変更',delete:'オブジェクトをタップして削除'};
-    document.getElementById('arPlaceHint').textContent = hints[ar.mode] || '';
-    const canvas = document.getElementById('arCanvas');
-    canvas.style.cursor = ar.mode==='delete' ? 'not-allowed' : ar.mode==='move' ? 'grab' : 'crosshair';
-  });
-});
 
 // ── Clear all ──
 document.getElementById('btnClearAll').addEventListener('click', ()=>{
@@ -1516,83 +1523,177 @@ function refreshObjStrip(){
   });
 }
 
-// ── Touch / Mouse events ──
+// ── Touch / Mouse events (unified gesture) ──
 function initAREvents(){
   const canvas = document.getElementById('arCanvas');
+  const LONG_PRESS_MS = 350;  // 長押し判定時間
 
-  // ---- POINTER DOWN ----
-  canvas.addEventListener('pointerdown', e=>{
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if(ar.mode==='place'){
-      addObject(x, y);
-    } else if(ar.mode==='delete'){
-      const obj = getObjAt(x,y);
-      if(obj){ removeObj(obj.id); toast('🗑 オブジェクトを削除'); }
-    } else if(ar.mode==='move'){
-      const obj = getObjAt(x,y);
-      if(obj){
-        ar.dragObj = obj;
-        ar.dragStartX = x; ar.dragStartY = y;
-        ar.dragObjStartX = obj.x; ar.dragObjStartY = obj.y;
-        canvas.style.cursor = 'grabbing';
-      }
-    } else if(ar.mode==='scale'){
-      const obj = getObjAt(x,y);
-      if(obj){ ar.dragObj = obj; ar.pinchObjSize = obj.size; }
-    }
-  });
-
-  canvas.addEventListener('pointermove', e=>{
-    e.preventDefault();
-    if(!ar.dragObj) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if(ar.mode==='move'){
-      ar.dragObj.x = ar.dragObjStartX + (x - ar.dragStartX);
-      ar.dragObj.y = ar.dragObjStartY + (y - ar.dragStartY);
-    } else if(ar.mode==='scale'){
-      const dy = ar.dragStartY - y;
-      ar.dragObj.size = Math.max(40, ar.pinchObjSize + dy);
-      ar.dragStartY = y;
-      ar.pinchObjSize = ar.dragObj.size;
-    }
-  });
-
-  canvas.addEventListener('pointerup', e=>{
-    ar.dragObj = null;
-    if(ar.mode==='move') canvas.style.cursor='grab';
-  });
-
-  // Pinch-to-scale (touch)
+  // ════════════════════════════════
+  //  TOUCH (スマートフォン主体)
+  // ════════════════════════════════
   canvas.addEventListener('touchstart', e=>{
-    if(e.touches.length===2 && ar.mode==='scale'){
+    e.preventDefault();
+
+    // ── 2本指: ピンチスケール開始 ──
+    if(e.touches.length === 2){
+      if(ar.longPressTimer){ clearTimeout(ar.longPressTimer); ar.longPressTimer=null; }
+      ar.isDragging = false;
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      ar.pinchDist = Math.hypot(dx,dy);
-      // find nearest obj to midpoint
-      const mx = (e.touches[0].clientX+e.touches[1].clientX)/2;
-      const my = (e.touches[0].clientY+e.touches[1].clientY)/2;
-      ar.dragObj = getObjAt(mx,my) || ar.objects[ar.objects.length-1];
-      if(ar.dragObj) ar.pinchObjSize = ar.dragObj.size;
+      ar.pinchDist = Math.hypot(dx, dy);
+      // 中点に最も近いオブジェクトをターゲット
+      const mx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const my = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const rect = canvas.getBoundingClientRect();
+      ar.pinchObj = getObjAt(mx - rect.left, my - rect.top)
+                    || ar.objects[ar.objects.length-1] || null;
+      if(ar.pinchObj) ar.pinchObjSize = ar.pinchObj.size;
+      return;
     }
-  },{passive:true});
+
+    // ── 1本指 ──
+    const t0 = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = t0.clientX - rect.left;
+    const y = t0.clientY - rect.top;
+    const hitObj = getObjAt(x, y);
+
+    if(hitObj){
+      // オブジェクト上: 長押しタイマー開始
+      ar.longPressTimer = setTimeout(()=>{
+        ar.longPressTimer = null;
+        ar.isDragging = true;
+        ar.dragObj = hitObj;
+        ar.dragStartX = x;
+        ar.dragStartY = y;
+        ar.dragObjStartX = hitObj.x;
+        ar.dragObjStartY = hitObj.y;
+        ar.selectedId = hitObj.id;
+        // 長押し認識フィードバック
+        hitObj._longPressFlash = 6;
+      }, LONG_PRESS_MS);
+    } else {
+      // 空白タップ: 新規オブジェクトを追加
+      ar.longPressTimer = null;
+    }
+
+    // タップ位置を記録（短タップ判定用）
+    ar._tapX = x; ar._tapY = y; ar._tapObj = hitObj;
+
+  },{passive:false});
 
   canvas.addEventListener('touchmove', e=>{
-    if(e.touches.length===2 && ar.dragObj && ar.pinchDist){
+    e.preventDefault();
+
+    // ── 2本指: ピンチ ──
+    if(e.touches.length === 2 && ar.pinchObj && ar.pinchDist){
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const newDist = Math.hypot(dx,dy);
-      ar.dragObj.size = Math.max(40, ar.pinchObjSize * (newDist/ar.pinchDist));
+      const newDist = Math.hypot(dx, dy);
+      ar.pinchObj.size = Math.max(40, ar.pinchObjSize * (newDist / ar.pinchDist));
+      return;
     }
-  },{passive:true});
 
-  // Device orientation for ambient parallax on all objects
+    // ── 1本指移動 ──
+    if(ar.isDragging && ar.dragObj){
+      const t0 = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const x = t0.clientX - rect.left;
+      const y = t0.clientY - rect.top;
+      ar.dragObj.x = ar.dragObjStartX + (x - ar.dragStartX);
+      ar.dragObj.y = ar.dragObjStartY + (y - ar.dragStartY);
+      return;
+    }
+
+    // 指が大きく動いたら長押しキャンセル
+    if(ar.longPressTimer && e.touches.length === 1){
+      const t0 = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      const dx = t0.clientX - rect.left - ar._tapX;
+      const dy = t0.clientY - rect.top  - ar._tapY;
+      if(Math.hypot(dx,dy) > 8){
+        clearTimeout(ar.longPressTimer);
+        ar.longPressTimer = null;
+      }
+    }
+  },{passive:false});
+
+  canvas.addEventListener('touchend', e=>{
+    e.preventDefault();
+    // ピンチ終了
+    if(e.touches.length < 2){
+      ar.pinchObj = null; ar.pinchDist = null;
+    }
+
+    const wasDragging = ar.isDragging;
+    ar.isDragging = false;
+    ar.dragObj = null;
+
+    // 長押しタイマーが残っている = 短タップ完了
+    if(ar.longPressTimer){
+      clearTimeout(ar.longPressTimer);
+      ar.longPressTimer = null;
+      // オブジェクトの外をタップ → 新規追加
+      if(!ar._tapObj){
+        addObject(ar._tapX, ar._tapY);
+      }
+    }
+  },{passive:false});
+
+  // ════════════════════════════════
+  //  MOUSE (デスクトップ)
+  // ════════════════════════════════
+  let mouseDown = false, mouseLongTimer = null, mouseDragging = false;
+
+  canvas.addEventListener('mousedown', e=>{
+    mouseDown = true;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const hitObj = getObjAt(x, y);
+    ar._tapX = x; ar._tapY = y; ar._tapObj = hitObj;
+
+    if(hitObj){
+      mouseLongTimer = setTimeout(()=>{
+        mouseLongTimer = null;
+        mouseDragging = true;
+        ar.dragObj = hitObj;
+        ar.dragStartX = x; ar.dragStartY = y;
+        ar.dragObjStartX = hitObj.x; ar.dragObjStartY = hitObj.y;
+        canvas.style.cursor = 'grabbing';
+      }, LONG_PRESS_MS);
+    }
+  });
+
+  canvas.addEventListener('mousemove', e=>{
+    if(!mouseDown) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if(mouseDragging && ar.dragObj){
+      ar.dragObj.x = ar.dragObjStartX + (x - ar.dragStartX);
+      ar.dragObj.y = ar.dragObjStartY + (y - ar.dragStartY);
+    } else if(mouseLongTimer){
+      const dx = x - ar._tapX, dy = y - ar._tapY;
+      if(Math.hypot(dx,dy) > 6){ clearTimeout(mouseLongTimer); mouseLongTimer=null; }
+    }
+  });
+
+  canvas.addEventListener('mouseup', e=>{
+    mouseDown = false;
+    canvas.style.cursor = 'crosshair';
+    if(mouseLongTimer){
+      clearTimeout(mouseLongTimer); mouseLongTimer=null;
+      if(!ar._tapObj){
+        const rect = canvas.getBoundingClientRect();
+        addObject(e.clientX - rect.left, e.clientY - rect.top);
+      }
+    }
+    mouseDragging = false;
+    ar.dragObj = null;
+  });
+
+  // Device orientation for ambient parallax
   window.addEventListener('deviceorientation', e=>{
     ar._tiltX = (e.gamma||0)/60;
     ar._tiltY = ((e.beta||45)-45)/60;
@@ -1687,18 +1788,18 @@ function renderAR(){
         ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2,cy2+sy2*cl);ctx.stroke();
       });
 
-      // Mode indicator
-      if(ar.mode==='delete'){
-        ctx.fillStyle='rgba(255,0,0,.25)';
+      // ドラッグ中のハイライト
+      if(ar.isDragging && ar.dragObj===obj){
+        ctx.fillStyle='rgba(0,255,224,.10)';
         ctx.fillRect(-hw,-hw,obj.size,obj.size);
-        ctx.fillStyle='rgba(255,80,80,.9)';
-        ctx.font=`bold ${obj.size*.2}px monospace`;
-        ctx.textAlign='center';
-        ctx.textBaseline='middle';
-        ctx.fillText('✕',0,0);
-      } else if(ar.mode==='move' && ar.dragObj===obj){
-        ctx.fillStyle='rgba(0,255,224,.08)';
+      }
+
+      // 長押し認識フラッシュ
+      if(obj._longPressFlash > 0){
+        const alpha = obj._longPressFlash / 6 * 0.35;
+        ctx.fillStyle=`rgba(0,255,224,${alpha})`;
         ctx.fillRect(-hw,-hw,obj.size,obj.size);
+        obj._longPressFlash--;
       }
 
       // Object index badge
@@ -1741,14 +1842,14 @@ function drawARHUD(ctx, W, H, t){
     ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+sy*l);ctx.stroke();
   });
   // Object count in corner
-  ctx.fillStyle='rgba(0,255,224,.6)';
+  ctx.fillStyle='rgba(0,255,224,.5)';
   ctx.font='11px monospace';
   ctx.textAlign='right';
   ctx.textBaseline='bottom';
-  ctx.fillText(`OBJ: ${ar.objects.length}  MODE: ${ar.mode.toUpperCase()}`, W-m-4, H-m-4);
+  ctx.fillText(`OBJ: ${ar.objects.length}`, W-m-4, H-m-4);
 
-  // Pulse ring (only when no objects yet)
-  if(ar.objects.length===0 && ar.mode==='place'){
+  // オブジェクト未配置時のみ中央ガイドを表示
+  if(ar.objects.length===0){
     const pr = (t%1.5)*60+15;
     const pa = 1-(t%1.5)/1.5;
     ctx.strokeStyle=`rgba(0,255,224,${pa*.4})`;
