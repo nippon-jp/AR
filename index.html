@@ -1,386 +1,1178 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AR Studio | Improved Simple 3D</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-    <style>
-        :root { 
-            --accent: #a68b6a; 
-            --bg: #050505; 
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --text: #eee;
-            --danger: #ff4444; 
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AR Studio Flash — 写真を0秒でARへ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;500;700&display=swap" rel="stylesheet">
 
-        body.light-mode {
-            --bg: #f5f5f5;
-            --card-bg: rgba(0, 0, 0, 0.05);
-            --text: #222;
-        }
+<style>
+  :root {
+    --bg: #060a0f;
+    --surface: #0d1520;
+    --card: #111c2e;
+    --accent: #00ffe0;
+    --accent2: #ff3cac;
+    --accent3: #ffe100;
+    --text: #e8f4ff;
+    --text-dim: #6888aa;
+    --border: rgba(0,255,224,0.15);
+    --glow: 0 0 24px rgba(0,255,224,0.35);
+  }
 
-        body { margin: 0; overflow: hidden; background-color: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text); touch-action: none; transition: background-color 0.3s; }
-        
-        #landing {
-            position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle at center, var(--bg) 0%, #000 100%); z-index: 100; transition: opacity 0.4s;
-        }
-        body.light-mode #landing { background: radial-gradient(circle at center, var(--bg) 0%, #ddd 100%); }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-        .card {
-            background: var(--card-bg); backdrop-filter: blur(15px); padding: 30px; border-radius: 24px; border: 1px solid rgba(128,128,128,0.2);
-            text-align: center; max-width: 350px; width: 85%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-        }
-        #preview-container {
-            width: 180px; height: 180px; border: 2px dashed #888; border-radius: 20px; margin: 20px auto;
-            display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.1);
-            position: relative; cursor: pointer;
-        }
-        #preview-img { max-width: 100%; max-height: 100%; display: none; object-fit: contain; }
-        
-        #loading-overlay {
-            position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
-            background: var(--bg); z-index: 150;
-        }
-        .progress-box { width: 70%; max-width: 250px; text-align: center; }
-        .progress-bg { width: 100%; height: 4px; background: #88888844; border-radius: 2px; margin: 15px 0; overflow: hidden; }
-        #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.1s; }
-        
-        button {
-            background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 50px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 5px;
-        }
-        button:disabled { background: #888; opacity: 0.5; cursor: not-allowed; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-        #ui-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; }
-        .hud { position: absolute; pointer-events: auto; width: 100%; display: flex; justify-content: center; }
-        .top { top: 20px; justify-content: space-between; padding: 0 20px; width: calc(100% - 40px); }
-        .bottom { bottom: 30px; gap: 10px; flex-wrap: wrap; }
-        
-        #ar-video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: none; }
-        #rec-timer { color: var(--danger); font-family: monospace; font-size: 14px; display: none; margin-top: 5px; font-weight: bold; }
-        canvas { display: block; opacity: 0; transition: opacity 0.8s; }
-        canvas.visible { opacity: 1; }
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none;
+    z-index:9999;
+    opacity:.4;
+  }
 
-        .theme-toggle, .ctrl-btn {
-            background: rgba(128, 128, 128, 0.2); color: var(--text); border: 1px solid rgba(128,128,128,0.3);
-            padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
-        }
-        .active-ctrl { border-color: var(--accent); color: var(--accent); }
-    </style>
+  /* ── GRID BG ── */
+  .grid-bg {
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(0,255,224,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,224,.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events:none;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position:relative;
+    z-index:10;
+    padding: 24px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family:'Space Mono', monospace;
+    font-size: 1.1rem;
+    letter-spacing:.12em;
+    color: var(--accent);
+    text-shadow: var(--glow);
+  }
+  .logo span { color: var(--accent2); }
+  .badge {
+    font-family:'Space Mono', monospace;
+    font-size:.65rem;
+    letter-spacing:.15em;
+    padding:4px 10px;
+    border:1px solid var(--accent);
+    color: var(--accent);
+    border-radius:2px;
+    animation: pulse-border 2s infinite;
+  }
+  @keyframes pulse-border {
+    0%,100%{box-shadow:0 0 0 rgba(0,255,224,0)}
+    50%{box-shadow:0 0 10px rgba(0,255,224,.4)}
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position:relative;
+    z-index:10;
+    text-align:center;
+    padding: 60px 24px 40px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem,6vw,4rem);
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:-.02em;
+  }
+  .hero h1 em {
+    font-style:normal;
+    color: var(--accent);
+    text-shadow: var(--glow);
+  }
+  .hero p {
+    margin-top:16px;
+    color: var(--text-dim);
+    font-size:1rem;
+    font-weight:300;
+  }
+  .step-row {
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .step {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:8px 16px;
+    font-family:'Space Mono',monospace;
+    font-size:.72rem;
+    color: var(--text-dim);
+  }
+  .step .num {
+    width:20px;height:20px;
+    background:var(--accent);
+    color:#000;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.65rem;font-weight:700;flex-shrink:0;
+  }
+  .arrow { color: var(--accent); font-size:.9rem; }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    position:relative;
+    z-index:10;
+    display:grid;
+    grid-template-columns: 360px 1fr;
+    gap:24px;
+    padding: 0 32px 40px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+  @media(max-width:800px){
+    .main { grid-template-columns:1fr; padding:0 16px 40px; }
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+  .panel-title {
+    font-family:'Space Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.2em;
+    color: var(--accent);
+    text-transform:uppercase;
+    border-bottom:1px solid var(--border);
+    padding-bottom:12px;
+  }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone {
+    border: 2px dashed rgba(0,255,224,.3);
+    border-radius:6px;
+    padding:32px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition: all .2s;
+    position:relative;
+    overflow:hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,255,224,.05);
+  }
+  .upload-zone .icon { font-size:2.5rem; margin-bottom:8px; }
+  .upload-zone p { font-size:.85rem; color:var(--text-dim); }
+  .upload-zone strong { color:var(--accent); }
+  #fileInput { display:none; }
+
+  /* ── PREVIEW ── */
+  .preview-wrap {
+    aspect-ratio:1;
+    background: var(--surface);
+    border-radius:6px;
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .preview-wrap img {
+    max-width:100%;max-height:100%;
+    object-fit:contain;
+    border-radius:4px;
+  }
+  .preview-placeholder {
+    color:var(--text-dim);font-size:.8rem;text-align:center;
+  }
+
+  /* ── CONTROLS ── */
+  .ctrl-group { display:flex;flex-direction:column;gap:10px; }
+  .ctrl-label {
+    font-size:.72rem;color:var(--text-dim);letter-spacing:.08em;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .ctrl-label span { color:var(--accent);font-family:'Space Mono',monospace; }
+  input[type=range] {
+    width:100%;
+    -webkit-appearance:none;
+    height:3px;
+    background: linear-gradient(90deg, var(--accent) var(--val,50%), rgba(255,255,255,.1) var(--val,50%));
+    border-radius:2px;outline:none;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none;
+    width:14px;height:14px;
+    background:var(--accent);
+    border-radius:50%;
+    box-shadow: var(--glow);
+    cursor:pointer;
+  }
+
+  .toggle-row { display:flex;gap:8px;flex-wrap:wrap; }
+  .toggle-btn {
+    flex:1;min-width:80px;
+    padding:8px 4px;
+    background: var(--surface);
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    border-radius:4px;
+    font-family:'Space Mono',monospace;
+    font-size:.65rem;
+    cursor:pointer;
+    transition:all .15s;
+    text-align:center;
+  }
+  .toggle-btn.active, .toggle-btn:hover {
+    border-color:var(--accent);
+    color:var(--accent);
+    background: rgba(0,255,224,.08);
+    box-shadow: var(--glow);
+  }
+
+  /* ── LAUNCH BTN ── */
+  .btn-launch {
+    width:100%;
+    padding:16px;
+    background: linear-gradient(135deg, var(--accent), #00c9a7);
+    color:#000;
+    font-family:'Space Mono',monospace;
+    font-size:.85rem;
+    font-weight:700;
+    letter-spacing:.15em;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    transition: all .2s;
+    position:relative;
+    overflow:hidden;
+  }
+  .btn-launch:hover { transform:translateY(-1px); box-shadow: 0 8px 32px rgba(0,255,224,.4); }
+  .btn-launch:active { transform:translateY(0); }
+  .btn-launch:disabled { opacity:.4;cursor:not-allowed;transform:none; }
+  .btn-launch::after {
+    content:'';
+    position:absolute;
+    top:-50%;left:-50%;
+    width:200%;height:200%;
+    background: linear-gradient(transparent, rgba(255,255,255,.15), transparent);
+    transform:rotate(45deg) translateX(-100%);
+    transition:.5s;
+  }
+  .btn-launch:hover::after { transform:rotate(45deg) translateX(100%); }
+
+  .btn-secondary {
+    width:100%;
+    padding:10px;
+    background: transparent;
+    color:var(--text-dim);
+    font-family:'Space Mono',monospace;
+    font-size:.72rem;
+    border:1px solid var(--border);
+    border-radius:4px;
+    cursor:pointer;
+    transition:all .2s;
+  }
+  .btn-secondary:hover { border-color:var(--accent2);color:var(--accent2); }
+
+  /* ── VIEWER ── */
+  .viewer-panel {
+    background: var(--card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:500px;
+  }
+  .viewer-header {
+    padding:16px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .viewer-title {
+    font-family:'Space Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.2em;
+    color:var(--accent);
+  }
+  .viewer-badges { display:flex;gap:6px; }
+  .vbadge {
+    font-family:'Space Mono',monospace;
+    font-size:.55rem;
+    padding:3px 8px;
+    border-radius:2px;
+    background:rgba(0,255,224,.1);
+    border:1px solid rgba(0,255,224,.2);
+    color:var(--accent);
+  }
+  .vbadge.live { background:rgba(255,60,172,.1);border-color:rgba(255,60,172,.3);color:var(--accent2); animation: blink .8s infinite; }
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+  #canvasWrap {
+    flex:1;
+    position:relative;
+    background: radial-gradient(ellipse at center, #0a1628 0%, var(--bg) 100%);
+  }
+  #c3d {
+    width:100%;height:100%;
+    display:block;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:12px;
+    pointer-events:none;
+  }
+  .empty-state .big-icon { font-size:4rem;opacity:.3; }
+  .empty-state p { color:var(--text-dim);font-size:.85rem;text-align:center; }
+
+  /* ── CAMERA STRIP ── */
+  #cameraStrip {
+    display:none;
+    height:120px;
+    border-top:1px solid var(--border);
+    position:relative;
+    overflow:hidden;
+  }
+  #cameraStrip video, #cameraStrip canvas {
+    width:100%;height:100%;object-fit:cover;position:absolute;inset:0;
+  }
+  .cam-overlay {
+    position:absolute;inset:0;
+    border:2px solid rgba(0,255,224,.3);
+    pointer-events:none;
+  }
+  .cam-corners::before, .cam-corners::after {
+    content:'';position:absolute;
+    width:20px;height:20px;
+    border-color:var(--accent);
+    border-style:solid;
+  }
+  .cam-corners::before { top:6px;left:6px;border-width:2px 0 0 2px; }
+  .cam-corners::after { bottom:6px;right:6px;border-width:0 2px 2px 0; }
+
+  /* ── INFO BAR ── */
+  .info-bar {
+    padding:8px 20px;
+    border-top:1px solid var(--border);
+    display:flex;align-items:center;gap:16px;
+    font-family:'Space Mono',monospace;
+    font-size:.6rem;
+    color:var(--text-dim);
+  }
+  .info-bar .dot { width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:var(--glow); }
+
+  /* ── AR OVERLAY ── */
+  #arOverlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:200;
+    background:#000;
+  }
+  #arVideo { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
+  #arCanvas { position:absolute;inset:0;width:100%;height:100%; }
+  .ar-ui {
+    position:absolute;
+    bottom:0;left:0;right:0;
+    padding:20px 24px 36px;
+    background:linear-gradient(transparent, rgba(0,0,0,.8));
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .ar-label {
+    font-family:'Space Mono',monospace;
+    font-size:.75rem;
+    color:var(--accent);
+    text-shadow:var(--glow);
+  }
+  .ar-label small { display:block;color:rgba(255,255,255,.4);font-size:.6rem;margin-top:2px; }
+  .btn-ar-close {
+    padding:10px 20px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    color:#fff;
+    font-family:'Space Mono',monospace;
+    font-size:.72rem;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .ar-crosshair {
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    width:60px;height:60px;
+    pointer-events:none;
+  }
+  .ar-crosshair::before,.ar-crosshair::after {
+    content:'';position:absolute;background:rgba(0,255,224,.6);
+    border-radius:1px;
+  }
+  .ar-crosshair::before { width:1px;height:100%;left:50%;transform:translateX(-50%); }
+  .ar-crosshair::after { width:100%;height:1px;top:50%;transform:translateY(-50%); }
+
+  /* ── TOAST ── */
+  #toast {
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--card);border:1px solid var(--accent);
+    color:var(--text);font-family:'Space Mono',monospace;font-size:.75rem;
+    padding:10px 20px;border-radius:4px;
+    opacity:0;transition:all .3s;pointer-events:none;
+    z-index:300;white-space:nowrap;
+  }
+  #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+</style>
 </head>
 <body>
 
-    <video id="ar-video" autoplay playsinline muted></video>
+<div class="grid-bg"></div>
 
-    <div id="landing">
-        <div class="card">
-            <h1 style="color: var(--accent); margin: 0; font-size: 24px;">AR Studio</h1>
-            <p style="font-size: 13px; opacity: 0.6; margin: 10px 0;">写真を即座に3D化・改善版</p>
-            
-            <div id="preview-container" onclick="$('file-input').click()">
-                <span id="placeholder" style="color: var(--accent); font-size: 13px; font-weight: bold;">写真を選択</span>
-                <img id="preview-img">
-            </div>
-            <input type="file" id="file-input" accept="image/*" style="display: none;">
-            
-            <button id="start-btn" disabled>読み込み中...</button>
-            <div style="margin-top: 15px;">
-                <button class="theme-toggle" id="theme-btn-landing">🌙 ダーク / ☀️ ライト</button>
-            </div>
+<header>
+  <div class="logo">AR<span>.</span>FLASH</div>
+  <div class="badge">INSTANT 2.5D AR</div>
+</header>
+
+<section class="hero">
+  <h1>写真を<em>0秒</em>でARへ</h1>
+  <p>テクスチャ生成なし。アップロードした瞬間、即AR体験。</p>
+  <div class="step-row">
+    <div class="step"><div class="num">1</div>写真を選ぶ</div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="num">2</div>スタイルを選ぶ</div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="num">3</div>即AR表示</div>
+  </div>
+</section>
+
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="panel">
+      <div class="panel-title">// IMAGE INPUT</div>
+
+      <!-- Upload -->
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*">
+        <div class="icon">📷</div>
+        <p><strong>タップ or ドロップ</strong>で画像を選択<br><span style="font-size:.75rem;margin-top:4px;display:block;">JPG / PNG / WebP 対応</span></p>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-wrap">
+        <div class="preview-placeholder" id="prevPlaceholder">
+          <div style="font-size:2rem;opacity:.3">🖼️</div>
+          <div style="margin-top:8px">画像を選択してください</div>
         </div>
+        <img id="prevImg" style="display:none" alt="preview">
+      </div>
     </div>
 
-    <div id="loading-overlay">
-        <div class="progress-box">
-            <div id="progress-num" style="font-size: 32px; font-weight: 800; color: var(--accent);">0%</div>
-            <div class="progress-bg"><div id="progress-bar"></div></div>
-            <p style="font-size: 11px; opacity: 0.5; letter-spacing: 2px;">PREPARING 3D CANVAS...</p>
-        </div>
+    <div class="panel">
+      <div class="panel-title">// STYLE</div>
+
+      <div class="toggle-row" id="styleToggle">
+        <button class="toggle-btn active" data-style="float">フロート</button>
+        <button class="toggle-btn" data-style="tilt">チルト</button>
+        <button class="toggle-btn" data-style="wave">ウェーブ</button>
+        <button class="toggle-btn" data-style="shatter">シャード</button>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label">奥行き <span id="depthVal">40</span></div>
+        <input type="range" id="depthRange" min="5" max="100" value="40">
+
+        <div class="ctrl-label">サイズ <span id="sizeVal">1.0</span>×</div>
+        <input type="range" id="sizeRange" min="3" max="20" value="10">
+
+        <div class="ctrl-label">アニメ速度 <span id="speedVal">1.0</span></div>
+        <input type="range" id="speedRange" min="1" max="30" value="10">
+      </div>
+
+      <div class="panel-title" style="margin-top:8px">// EFFECT</div>
+      <div class="toggle-row" id="fxToggle">
+        <button class="toggle-btn active" data-fx="glow">グロー</button>
+        <button class="toggle-btn" data-fx="scan">スキャン</button>
+        <button class="toggle-btn" data-fx="shadow">シャドウ</button>
+        <button class="toggle-btn" data-fx="none">なし</button>
+      </div>
     </div>
 
-    <div id="ui-overlay">
-        <div class="hud top">
-            <div>
-                <h2 style="margin:0; font-size: 16px; color: var(--accent);">AR Studio</h2>
-                <div id="rec-timer">REC 00:00</div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
-                <button id="stop-btn" style="background: var(--danger); padding: 8px 16px; font-size: 13px;">終了</button>
-                <button class="theme-toggle" id="theme-btn-hud">🌓 テーマ切替</button>
-            </div>
-        </div>
-        <div class="hud bottom">
-            <button id="ar-btn">ARモード</button>
-            <button id="rec-btn">録画開始</button>
-            <button class="ctrl-btn" id="reset-btn">カメラリセット</button>
-            <button class="ctrl-btn" id="auto-btn">オートターン: OFF</button>
-        </div>
+    <div class="panel">
+      <div class="panel-title">// LAUNCH</div>
+      <button class="btn-launch" id="btn3d" disabled>▶ 3Dプレビュー</button>
+      <button class="btn-launch" id="btnAR" disabled style="background:linear-gradient(135deg,var(--accent2),#c0006a)">
+        📱 ARモードで体験
+      </button>
+      <button class="btn-secondary" id="btnDemo">サンプル画像で試す</button>
     </div>
 
-    <script>
-        const $ = (id) => document.getElementById(id);
-        let scene, camera, renderer, photoGroup, animId, skinTex = null;
-        let active = false, arActive = false, mediaRec, chunks = [];
-        let isDarkMode = true, autoRotate = false;
-        let rY = 0, rX = 0, targetRY = 0, targetRX = 0;
+  </div>
 
-        // --- テーマ切り替え ---
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('light-mode', !isDarkMode);
-            if (scene) {
-                const color = isDarkMode ? 0x050505 : 0xf5f5f5;
-                scene.background = new THREE.Color(color);
-                scene.fog.color = new THREE.Color(color);
-                if (scene.ground) scene.ground.material.color.set(isDarkMode ? 0x111111 : 0xcccccc);
-            }
-        }
+  <!-- VIEWER -->
+  <div class="viewer-panel">
+    <div class="viewer-header">
+      <div class="viewer-title">// 3D VIEWER</div>
+      <div class="viewer-badges">
+        <div class="vbadge">WebGL</div>
+        <div class="vbadge" id="liveBadge">READY</div>
+      </div>
+    </div>
 
-        $('theme-btn-landing').addEventListener('click', toggleTheme);
-        $('theme-btn-hud').addEventListener('click', toggleTheme);
-        $('start-btn').textContent = "写真を選んでください";
+    <div id="canvasWrap">
+      <canvas id="c3d"></canvas>
+      <div class="empty-state" id="emptyState">
+        <div class="big-icon">🌐</div>
+        <p>画像をアップロードすると<br>即座に3Dプレビューが表示されます</p>
+      </div>
+    </div>
 
-        // --- 画像読み込みとテクスチャ準備 ---
-        $('file-input').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                $('preview-img').src = ev.target.result;
-                $('preview-img').style.display = 'block';
-                $('placeholder').style.display = 'none';
-                $('start-btn').textContent = "テクスチャ準備中...";
-                $('start-btn').disabled = true;
+    <div id="cameraStrip">
+      <video id="camVideo" autoplay muted playsinline></video>
+      <canvas id="camCanvas"></canvas>
+      <div class="cam-overlay cam-corners"></div>
+    </div>
 
-                const loader = new THREE.TextureLoader();
-                loader.load(ev.target.result, (t) => {
-                    skinTex = t;
-                    skinTex.colorSpace = THREE.SRGBColorSpace;
-                    $('start-btn').disabled = false;
-                    $('start-btn').textContent = "3D作成開始";
-                }, undefined, (err) => {
-                    alert("画像の読み込みに失敗しました。");
-                    $('start-btn').textContent = "再試行してください";
-                });
-            };
-            reader.readAsDataURL(file);
-        });
+    <div class="info-bar">
+      <div class="dot"></div>
+      <span id="infoText">待機中 — 画像をアップロードしてください</span>
+    </div>
+  </div>
 
-        // --- モデリング開始 ---
-        $('start-btn').addEventListener('click', () => {
-            if (!skinTex) return;
-            $('loading-overlay').style.display = 'flex';
-            let p = 0;
-            const int = setInterval(() => {
-                p += Math.random() * 25 + 5;
-                if (p >= 100) {
-                    p = 100;
-                    clearInterval(int);
-                    setTimeout(launch3D, 200);
-                }
-                $('progress-bar').style.width = p + '%';
-                $('progress-num').textContent = Math.floor(p) + '%';
-            }, 80);
-        });
+</div>
 
-        function launch3D() {
-            $('loading-overlay').style.display = 'none';
-            $('landing').style.opacity = '0';
-            setTimeout(() => {
-                $('landing').style.display = 'none';
-                $('ui-overlay').style.display = 'block';
-                active = true;
-                initScene();
-            }, 400);
-        }
+<!-- AR OVERLAY -->
+<div id="arOverlay">
+  <video id="arVideo" autoplay muted playsinline></video>
+  <canvas id="arCanvas"></canvas>
+  <div class="ar-crosshair"></div>
+  <div class="ar-ui">
+    <div class="ar-label">
+      AR FLASH MODE
+      <small>端末を動かしてオブジェクトを探索</small>
+    </div>
+    <button class="btn-ar-close" id="btnArClose">✕ 終了</button>
+  </div>
+</div>
 
-        // --- 3D描画 (改善された複層立体構造) ---
-        function initScene() {
-            scene = new THREE.Scene();
-            const bgColor = isDarkMode ? 0x050505 : 0xf5f5f5;
-            scene.background = new THREE.Color(bgColor);
-            scene.fog = new THREE.Fog(bgColor, 5, 40);
+<div id="toast"></div>
 
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 3, 15);
+<script>
+// ================================================================
+// STATE
+// ================================================================
+const state = {
+  imgSrc: null,
+  imgEl: null,
+  style: 'float',
+  fx: 'glow',
+  depth: 40,
+  size: 1.0,
+  speed: 1.0,
+  animFrame: null,
+  arStream: null,
+  time: 0,
+};
 
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
-            
-            // 強制表示
-            requestAnimationFrame(() => renderer.domElement.classList.add('visible'));
+// ================================================================
+// UTILS
+// ================================================================
+function toast(msg, ms=2200){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), ms);
+}
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            
-            // メインライト
-            const sun = new THREE.DirectionalLight(0xffffff, 1.0);
-            sun.position.set(5, 12, 8);
-            sun.castShadow = true;
-            sun.shadow.mapSize.width = 1024;
-            sun.shadow.mapSize.height = 1024;
-            scene.add(sun);
+function setInfo(txt){
+  document.getElementById('infoText').textContent = txt;
+}
 
-            // マウス追従用スポットライト (立体感を出す)
-            const spotLight = new THREE.SpotLight(0xffffff, 0.5);
-            spotLight.position.set(0, 5, 10);
-            spotLight.angle = Math.PI / 6;
-            spotLight.penumbra = 0.3;
-            scene.add(spotLight);
-            scene.pointerLight = spotLight;
+function updateRangeGradient(el){
+  const pct = ((el.value - el.min)/(el.max - el.min)*100).toFixed(1)+'%';
+  el.style.setProperty('--val', pct);
+}
 
-            const ground = new THREE.Mesh(
-                new THREE.PlaneGeometry(100, 100),
-                new THREE.MeshStandardMaterial({ color: isDarkMode ? 0x111111 : 0xcccccc, roughness: 0.8 })
-            );
-            ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
-            scene.add(ground);
-            scene.ground = ground;
+// ================================================================
+// UPLOAD
+// ================================================================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
 
-            const aspect = skinTex.image.width / skinTex.image.height;
-            const h = 8;
-            const w = h * aspect;
+uploadZone.addEventListener('click', ()=>fileInput.click());
+uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.classList.add('drag-over');});
+uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e=>{
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) loadImageFile(file);
+});
 
-            photoGroup = new THREE.Group();
-            
-            // レイヤード・デプス (5層の厚み)
-            const layers = 6;
-            for(let i=0; i<layers; i++) {
-                const geometry = new THREE.PlaneGeometry(w, h);
-                const material = new THREE.MeshStandardMaterial({ 
-                    map: skinTex, 
-                    transparent: true, 
-                    alphaTest: 0.4,
-                    side: THREE.DoubleSide,
-                    opacity: i === 0 ? 1 : 0.8,
-                    metalness: 0.1,
-                    roughness: 0.5
-                });
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.z = -i * 0.04;
-                mesh.castShadow = i === 0;
-                photoGroup.add(mesh);
-            }
-            
-            photoGroup.position.y = h / 2 + 0.1;
-            scene.add(photoGroup);
+fileInput.addEventListener('change', ()=>{
+  if(fileInput.files[0]) loadImageFile(fileInput.files[0]);
+});
 
-            // 操作イベント
-            let lX, lY;
-            const move = (x, y) => {
-                targetRY += (x - lX) * 0.01;
-                targetRX += (y - lY) * 0.01;
-                
-                // スポットライトをマウス方向に移動
-                const vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
-                vector.unproject(camera);
-                const dir = vector.sub(camera.position).normalize();
-                const distance = -camera.position.z / dir.z;
-                const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-                scene.pointerLight.position.lerp(pos, 0.1);
-                
-                lX = x; lY = y;
-            };
+function loadImageFile(file){
+  const reader = new FileReader();
+  reader.onload = e => loadImageSrc(e.target.result, file.name);
+  reader.readAsDataURL(file);
+}
 
-            renderer.domElement.addEventListener('touchstart', (e) => { lX = e.touches[0].clientX; lY = e.touches[0].clientY; });
-            renderer.domElement.addEventListener('touchmove', (e) => move(e.touches[0].clientX, e.touches[0].clientY));
-            renderer.domElement.addEventListener('mousedown', (e) => { lX = e.clientX; lY = e.clientY; document.onmousemove = (ev) => move(ev.clientX, ev.clientY); });
-            window.addEventListener('mouseup', () => document.onmousemove = null);
+function loadImageSrc(src, name='image'){
+  state.imgSrc = src;
+  const img = new Image();
+  img.onload = () => {
+    state.imgEl = img;
 
-            loop();
-        }
+    // preview
+    const prevImg = document.getElementById('prevImg');
+    prevImg.src = src;
+    prevImg.style.display = 'block';
+    document.getElementById('prevPlaceholder').style.display = 'none';
 
-        function loop() {
-            if(!active) return;
-            animId = requestAnimationFrame(loop);
-            const t = Date.now() * 0.0015;
-            
-            // スムーズな回転
-            if(autoRotate) targetRY += 0.01;
-            
-            rY += (targetRY - rY) * 0.1;
-            rX += (targetRX - rX) * 0.1;
-            
-            photoGroup.rotation.y = rY;
-            camera.position.y = 3 + Math.max(-5, Math.min(10, rX * 5));
-            camera.lookAt(0, 4, 0);
+    // enable buttons
+    document.getElementById('btn3d').disabled = false;
+    document.getElementById('btnAR').disabled = false;
 
-            // 浮遊アニメーション
-            photoGroup.position.y = 4.1 + Math.sin(t) * 0.15;
-            
-            renderer.render(scene, camera);
-        }
+    // auto launch preview
+    launchPreview();
 
-        // --- 追加操作ボタン ---
-        $('reset-btn').addEventListener('click', () => {
-            targetRY = 0; targetRX = 0;
-        });
+    toast('✓ 画像を読み込みました');
+    setInfo(`${name} — ${img.width}×${img.height}px`);
+  };
+  img.src = src;
+}
 
-        $('auto-btn').addEventListener('click', () => {
-            autoRotate = !autoRotate;
-            $('auto-btn').textContent = `オートターン: ${autoRotate ? 'ON' : 'OFF'}`;
-            $('auto-btn').classList.toggle('active-ctrl', autoRotate);
-        });
+// ================================================================
+// SAMPLE IMAGE
+// ================================================================
+document.getElementById('btnDemo').addEventListener('click', ()=>{
+  // Generate colorful demo image on canvas
+  const c = document.createElement('canvas');
+  c.width = 400; c.height = 400;
+  const ctx = c.getContext('2d');
 
-        // --- AR & 録画 ---
-        $('ar-btn').addEventListener('click', async () => {
-            if (!arActive) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-                    $('ar-video').srcObject = stream;
-                    $('ar-video').style.display = 'block';
-                    scene.background = null;
-                    renderer.setClearColor(0x000000, 0);
-                    $('ar-btn').textContent = "背景オフ";
-                    arActive = true;
-                } catch(e) { alert("カメラ許可が必要です"); }
-            } else location.reload();
-        });
+  // Gradient bg
+  const grd = ctx.createLinearGradient(0,0,400,400);
+  grd.addColorStop(0,'#1a1a2e');
+  grd.addColorStop(.5,'#16213e');
+  grd.addColorStop(1,'#0f3460');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0,0,400,400);
 
-        $('rec-btn').addEventListener('click', () => {
-            if (mediaRec && mediaRec.state === "recording") {
-                mediaRec.stop();
-                $('rec-btn').textContent = "録画開始";
-                $('rec-timer').style.display = 'none';
-            } else {
-                const stream = renderer.domElement.captureStream(30);
-                mediaRec = new MediaRecorder(stream, { mimeType: 'video/webm' });
-                chunks = [];
-                mediaRec.ondataavailable = (e) => chunks.push(e.data);
-                mediaRec.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'video/webm' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `ar-studio-${Date.now()}.webm`;
-                    a.click();
-                };
-                mediaRec.start();
-                $('rec-btn').textContent = "停止";
-                $('rec-timer').style.display = 'block';
-                timerStart = Date.now();
-                const tInt = setInterval(() => {
-                    if (mediaRec.state !== "recording") { clearInterval(tInt); return; }
-                    const d = Math.floor((Date.now()-timerStart)/1000);
-                    $('rec-timer').textContent = `REC ${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
-                }, 1000);
-            }
-        });
+  // Circles
+  [[200,200,120,'rgba(0,255,224,.5)'],[150,150,60,'rgba(255,60,172,.6)'],[260,240,80,'rgba(255,225,0,.4)']].forEach(([x,y,r,c2])=>{
+    const g2 = ctx.createRadialGradient(x,y,0,x,y,r);
+    g2.addColorStop(0,c2);
+    g2.addColorStop(1,'transparent');
+    ctx.fillStyle = g2;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  });
 
-        $('stop-btn').addEventListener('click', () => location.reload());
+  // Text
+  ctx.fillStyle='rgba(255,255,255,.9)';
+  ctx.font='bold 36px monospace';
+  ctx.textAlign='center';
+  ctx.fillText('AR.FLASH',200,210);
+  ctx.font='16px monospace';
+  ctx.fillStyle='rgba(0,255,224,.8)';
+  ctx.fillText('SAMPLE IMAGE',200,245);
 
-        window.addEventListener('resize', () => {
-            if(camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        });
-    </script>
+  loadImageSrc(c.toDataURL(), 'sample.png');
+});
+
+// ================================================================
+// CONTROLS
+// ================================================================
+document.getElementById('depthRange').addEventListener('input', function(){
+  state.depth = +this.value;
+  document.getElementById('depthVal').textContent = this.value;
+  updateRangeGradient(this);
+});
+document.getElementById('sizeRange').addEventListener('input', function(){
+  state.size = (+this.value/10).toFixed(1);
+  document.getElementById('sizeVal').textContent = state.size;
+  updateRangeGradient(this);
+});
+document.getElementById('speedRange').addEventListener('input', function(){
+  state.speed = (+this.value/10).toFixed(1);
+  document.getElementById('speedVal').textContent = state.speed;
+  updateRangeGradient(this);
+});
+
+document.querySelectorAll('#styleToggle .toggle-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#styleToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.style = btn.dataset.style;
+  });
+});
+document.querySelectorAll('#fxToggle .toggle-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('#fxToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.fx = btn.dataset.fx;
+  });
+});
+
+// init range gradients
+[document.getElementById('depthRange'),document.getElementById('sizeRange'),document.getElementById('speedRange')]
+  .forEach(updateRangeGradient);
+
+// ================================================================
+// 3D PREVIEW — Pure Canvas 2.5D Renderer
+// ================================================================
+document.getElementById('btn3d').addEventListener('click', launchPreview);
+
+function launchPreview(){
+  if(!state.imgEl) return;
+  document.getElementById('emptyState').style.display='none';
+  document.getElementById('liveBadge').textContent='LIVE';
+  document.getElementById('liveBadge').classList.add('live');
+
+  if(state.animFrame) cancelAnimationFrame(state.animFrame);
+  state.time = 0;
+
+  const canvas = document.getElementById('c3d');
+  const wrap = document.getElementById('canvasWrap');
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+
+  render3D(canvas);
+}
+
+function render3D(canvas){
+  const ctx = canvas.getContext('2d');
+  const img = state.imgEl;
+  const W = canvas.width, H = canvas.height;
+
+  // Shatter: pre-build shards
+  let shards = [];
+  if(state.style==='shatter'){
+    const N = 18;
+    for(let i=0;i<N;i++){
+      shards.push({
+        x: Math.random(), y: Math.random(),
+        w: .15+Math.random()*.25, h:.15+Math.random()*.25,
+        vx:(Math.random()-.5)*.003, vy:(Math.random()-.5)*.003,
+        vr:(Math.random()-.5)*.02,
+        r:0, depth: .3+Math.random()*.7
+      });
+    }
+  }
+
+  function frame(){
+    state.time += 0.016 * state.speed;
+    const t = state.time;
+    ctx.clearRect(0,0,W,H);
+
+    // BG
+    ctx.fillStyle='#060a0f';
+    ctx.fillRect(0,0,W,H);
+
+    // Grid
+    ctx.strokeStyle='rgba(0,255,224,.04)';
+    ctx.lineWidth=1;
+    for(let x=0;x<W;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    const baseSize = Math.min(W,H)*0.55*state.size;
+    const cx=W/2, cy=H/2;
+
+    if(state.style==='float'){
+      drawFloat(ctx, img, cx, cy, baseSize, t);
+    } else if(state.style==='tilt'){
+      drawTilt(ctx, img, cx, cy, baseSize, t);
+    } else if(state.style==='wave'){
+      drawWave(ctx, img, cx, cy, baseSize, t);
+    } else if(state.style==='shatter'){
+      drawShatter(ctx, img, cx, cy, baseSize, t, shards, W, H);
+    }
+
+    state.animFrame = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// ── FLOAT style: layered parallax depth ──
+function drawFloat(ctx, img, cx, cy, size, t){
+  const depth = state.depth * .3;
+  const layers = 6;
+  for(let i=layers-1;i>=0;i--){
+    const d = (i/layers)*depth;
+    const ox = Math.sin(t*.7)*d;
+    const oy = Math.cos(t*.5)*d;
+    const sc = 1 - i*0.02;
+    const alpha = i===0?1 : 0.12 - i*0.012;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx+ox, cy+oy);
+    ctx.scale(sc,sc);
+
+    // shadow layers
+    if(i>0){
+      ctx.fillStyle=`rgba(0,0,0,${alpha*2})`;
+      ctx.beginPath();ctx.ellipse(0,0,size/2,size/2*0.1,0,0,Math.PI*2);ctx.fill();
+    }
+
+    drawImageCard(ctx, img, size, t, i===0);
+    ctx.restore();
+  }
+  applyFx(ctx, cx, cy, size, t);
+}
+
+// ── TILT style: 3D perspective rotation ──
+function drawTilt(ctx, img, cx, cy, size, t){
+  const maxTilt = state.depth*0.4;
+  const rx = Math.sin(t*.6)*maxTilt;  // degrees
+
+  ctx.save();
+  ctx.translate(cx,cy);
+
+  // perspective tilt via skew
+  const skewY = rx*0.005;
+  const scaleX = 1 - Math.abs(rx)*0.003;
+
+  ctx.transform(scaleX, skewY*0.3, 0, 1-Math.abs(skewY)*0.1, 0, 0);
+
+  // drop shadow
+  ctx.shadowColor='rgba(0,0,0,.6)';
+  ctx.shadowBlur=40;
+  ctx.shadowOffsetY=20;
+
+  drawImageCard(ctx, img, size, t, true);
+
+  ctx.restore();
+  applyFx(ctx, cx, cy, size, t);
+}
+
+// ── WAVE style: wave distortion on segments ──
+function drawWave(ctx, img, cx, cy, size, t){
+  const halfW = size/2, halfH = size/2;
+  const segs = 24;
+  const segH = size/segs;
+  const amplitude = state.depth * 0.15;
+
+  ctx.save();
+  ctx.translate(cx-halfW, cy-halfH);
+
+  // clip to card shape
+  ctx.save();
+  ctx.beginPath();ctx.rect(0,0,size,size);ctx.clip();
+
+  for(let i=0;i<segs;i++){
+    const y0 = i*segH;
+    const wave = Math.sin(t*1.5 + i*.4)*amplitude;
+    ctx.drawImage(img,
+      0, img.height*(i/segs), img.width, img.height/segs,   // src
+      wave, y0, size, segH+1                                  // dst
+    );
+  }
+  ctx.restore();
+
+  // border
+  ctx.strokeStyle='rgba(0,255,224,.5)';
+  ctx.lineWidth=2;
+  ctx.strokeRect(0,0,size,size);
+
+  ctx.restore();
+  applyFx(ctx, cx, cy, size, t);
+}
+
+// ── SHATTER style: image tiles flying ──
+function drawShatter(ctx, img, cx, cy, size, t, shards, W, H){
+  shards.forEach(s=>{
+    s.r += s.vr * state.speed;
+    s.x += s.vx * state.speed;
+    s.y += s.vy * state.speed;
+    if(s.x<-.2||s.x>1.2) s.vx*=-1;
+    if(s.y<-.2||s.y>1.2) s.vy*=-1;
+
+    const sx = s.x*W, sy = s.y*H;
+    const sw = s.w*size, sh = s.h*size;
+
+    ctx.save();
+    ctx.translate(sx,sy);
+    ctx.rotate(s.r);
+    ctx.globalAlpha = .85;
+
+    // draw shard from image region
+    ctx.drawImage(img,
+      s.x*img.width, s.y*img.height, s.w*img.width, s.h*img.height,
+      -sw/2, -sh/2, sw, sh
+    );
+
+    // shard border
+    ctx.strokeStyle=`rgba(0,255,224,${.3*s.depth})`;
+    ctx.lineWidth=1.5;
+    ctx.strokeRect(-sw/2,-sh/2,sw,sh);
+
+    ctx.restore();
+  });
+}
+
+// ── Draw image as card ──
+function drawImageCard(ctx, img, size, t, withBorder){
+  const hw = size/2;
+  ctx.drawImage(img, -hw, -hw, size, size);
+  if(withBorder){
+    ctx.strokeStyle='rgba(0,255,224,.6)';
+    ctx.lineWidth=2;
+    ctx.strokeRect(-hw,-hw,size,size);
+
+    // corner accents
+    const cl=16;
+    ctx.strokeStyle='var(--accent)';
+    ctx.lineWidth=3;
+    [[-hw,-hw,1,1],[-hw+cl,-hw,-1,1],[hw-cl,-hw,1,1],[hw,-hw,-1,1],
+     [-hw,hw,1,-1],[-hw+cl,hw,-1,-1],[hw-cl,hw,1,-1],[hw,hw,-1,-1]].forEach(([x,y,sx,sy])=>{
+      ctx.beginPath();
+      ctx.moveTo(x,y);ctx.lineTo(x+sx*cl,y);
+      ctx.moveTo(x,y);ctx.lineTo(x,y+sy*cl);
+      ctx.stroke();
+    });
+  }
+}
+
+// ── FX overlay ──
+function applyFx(ctx, cx, cy, size, t){
+  if(state.fx==='none') return;
+
+  if(state.fx==='glow'){
+    const r = ctx.createRadialGradient(cx,cy,size*.2,cx,cy,size*.8);
+    r.addColorStop(0,'rgba(0,255,224,.08)');
+    r.addColorStop(1,'transparent');
+    ctx.fillStyle=r;
+    ctx.fillRect(cx-size,cy-size,size*2,size*2);
+  }
+  if(state.fx==='scan'){
+    const scanY = cy - size/2 + ((t*80)%(size+40));
+    const g = ctx.createLinearGradient(0,scanY-8,0,scanY+8);
+    g.addColorStop(0,'transparent');
+    g.addColorStop(.5,'rgba(0,255,224,.25)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.fillRect(cx-size/2-20, scanY-8, size+40, 16);
+  }
+  if(state.fx==='shadow'){
+    const g = ctx.createLinearGradient(cx,cy+size*.3,cx,cy+size*.7);
+    g.addColorStop(0,'rgba(0,0,0,.7)');
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy+size*.45, size*.4, size*.08, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+// ================================================================
+// AR MODE — Camera + Canvas overlay
+// ================================================================
+document.getElementById('btnAR').addEventListener('click', launchAR);
+document.getElementById('btnArClose').addEventListener('click', closeAR);
+
+async function launchAR(){
+  if(!state.imgEl){ toast('先に画像をアップロードしてください'); return; }
+
+  const overlay = document.getElementById('arOverlay');
+  overlay.style.display='block';
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+    });
+    state.arStream = stream;
+    const video = document.getElementById('arVideo');
+    video.srcObject = stream;
+    await video.play();
+
+    renderAR();
+    toast('📱 ARモード開始 — 端末を動かしてください');
+  } catch(e){
+    toast('カメラの許可が必要です');
+    overlay.style.display='none';
+  }
+}
+
+function closeAR(){
+  if(state.arStream){
+    state.arStream.getTracks().forEach(t=>t.stop());
+    state.arStream = null;
+  }
+  document.getElementById('arOverlay').style.display='none';
+  if(state.arAnimFrame) cancelAnimationFrame(state.arAnimFrame);
+}
+
+function renderAR(){
+  const canvas = document.getElementById('arCanvas');
+  const video = document.getElementById('arVideo');
+  const ctx = canvas.getContext('2d');
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let arT = 0;
+  let tiltX=0, tiltY=0;
+
+  // Device orientation for parallax
+  window.addEventListener('deviceorientation', e=>{
+    tiltX = (e.gamma||0)/30;  // -1 to 1
+    tiltY = (e.beta-45||0)/30;
+  });
+
+  // Gyro fallback: mouse/touch
+  document.getElementById('arOverlay').addEventListener('touchmove', e=>{
+    const t2 = e.touches[0];
+    tiltX = (t2.clientX/window.innerWidth - .5)*2;
+    tiltY = (t2.clientY/window.innerHeight - .5)*2;
+  });
+
+  function arFrame(){
+    if(!state.arStream){ return; }
+    arT += 0.016 * state.speed;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const W = canvas.width, H = canvas.height;
+    const img = state.imgEl;
+    const size = Math.min(W,H) * 0.45 * state.size;
+
+    // AR placement: center + tilt parallax
+    const px = W/2 + tiltX * state.depth * 2;
+    const py = H/2 + tiltY * state.depth * 2;
+
+    // shadow
+    ctx.save();
+    ctx.globalAlpha=.4;
+    ctx.filter='blur(20px)';
+    ctx.fillStyle='rgba(0,0,0,.8)';
+    ctx.beginPath();
+    ctx.ellipse(px, py+size*.35, size*.45, size*.1, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // 3D-ish tilt
+    ctx.save();
+    ctx.translate(px, py);
+
+    const perspX = tiltX * 0.25;
+    const perspY = tiltY * 0.2;
+    ctx.transform(1-Math.abs(perspX)*.1, perspX*.1, perspY*.1, 1-Math.abs(perspY)*.1, 0, 0);
+
+    // glow
+    if(state.fx==='glow'){
+      const gr = ctx.createRadialGradient(0,0,0,0,0,size*.7);
+      gr.addColorStop(0,'rgba(0,255,224,.2)');
+      gr.addColorStop(1,'transparent');
+      ctx.fillStyle=gr;
+      ctx.beginPath();ctx.arc(0,0,size*.7,0,Math.PI*2);ctx.fill();
+    }
+
+    // image
+    const hw=size/2;
+    const bob = Math.sin(arT*.8)*8;  // floating bob
+    ctx.translate(0, bob);
+    ctx.shadowColor='rgba(0,0,0,.5)';
+    ctx.shadowBlur=30;
+    ctx.drawImage(img,-hw,-hw,size,size);
+
+    // scan line
+    if(state.fx==='scan'){
+      const sy = -hw + ((arT*60)%size);
+      const sg = ctx.createLinearGradient(0,sy-6,0,sy+6);
+      sg.addColorStop(0,'transparent');
+      sg.addColorStop(.5,'rgba(0,255,224,.4)');
+      sg.addColorStop(1,'transparent');
+      ctx.fillStyle=sg;
+      ctx.fillRect(-hw,sy-6,size,12);
+    }
+
+    // border glow
+    ctx.strokeStyle='rgba(0,255,224,.7)';
+    ctx.lineWidth=2.5;
+    ctx.shadowColor='rgba(0,255,224,.5)';
+    ctx.shadowBlur=15;
+    ctx.strokeRect(-hw,-hw,size,size);
+
+    ctx.restore();
+
+    // corner HUD
+    drawARHUD(ctx, W, H, arT);
+
+    state.arAnimFrame = requestAnimationFrame(arFrame);
+  }
+  arFrame();
+}
+
+function drawARHUD(ctx, W, H, t){
+  // Corner brackets
+  const m=20, l=30;
+  ctx.strokeStyle='rgba(0,255,224,.4)';
+  ctx.lineWidth=2;
+  [[m,m,1,1],[W-m,m,-1,1],[m,H-m,1,-1],[W-m,H-m,-1,-1]].forEach(([x,y,sx,sy])=>{
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+sx*l,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+sy*l);ctx.stroke();
+  });
+
+  // Status text
+  ctx.fillStyle='rgba(0,255,224,.7)';
+  ctx.font='12px monospace';
+  ctx.textAlign='left';
+  ctx.fillText('AR.FLASH  LIVE', m+4, m+40);
+  ctx.fillStyle='rgba(255,255,255,.3)';
+  ctx.fillText(`STYLE:${state.style.toUpperCase()}  FX:${state.fx.toUpperCase()}`, m+4, m+56);
+
+  // Pulse ring
+  const pr = (t%1)*80+20;
+  const pa = 1-(t%1);
+  ctx.strokeStyle=`rgba(0,255,224,${pa*.3})`;
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.arc(W/2, H/2, pr, 0, Math.PI*2);
+  ctx.stroke();
+}
+
+// ================================================================
+// RESIZE
+// ================================================================
+window.addEventListener('resize', ()=>{
+  if(state.imgEl) launchPreview();
+});
+</script>
 </body>
 </html>
