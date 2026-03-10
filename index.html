@@ -7,9 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#060a0f; --surface:#0d1520; --card:#111c2e;
-  --accent:#00ffe0; --accent2:#ff3cac;
-  --text:#e8f4ff; --dim:#5a7898;
+  --bg:#060a0f;--surface:#0d1520;--card:#111c2e;
+  --accent:#00ffe0;--accent2:#ff3cac;
+  --text:#e8f4ff;--dim:#5a7898;
   --border:rgba(0,255,224,.13);
   --glow:0 0 20px rgba(0,255,224,.32);
   --safe-b:env(safe-area-inset-bottom,0px);
@@ -17,19 +17,12 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;}
-
-/* grid bg */
 .grid-bg{position:fixed;inset:0;pointer-events:none;
   background-image:linear-gradient(rgba(0,255,224,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,224,.03) 1px,transparent 1px);
   background-size:48px 48px;}
 
-/* ── SPLASH ── */
-#splash{
-  position:fixed;inset:0;z-index:600;
-  background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  transition:opacity .4s;
-}
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:600;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:opacity .4s;}
 #splash.out{opacity:0;pointer-events:none;}
 .splash-inner{display:flex;flex-direction:column;align-items:center;gap:18px;padding:32px 24px;text-align:center;}
 .splash-logo{font-family:'Space Mono',monospace;font-size:2.4rem;letter-spacing:.15em;color:var(--accent);text-shadow:var(--glow);}
@@ -37,35 +30,19 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .splash-sub{font-family:'Space Mono',monospace;font-size:.75rem;color:var(--dim);letter-spacing:.1em;}
 .splash-dino{font-size:5.5rem;animation:bob 1.8s ease-in-out infinite;margin:4px 0;}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
-#btnStart{
-  padding:18px 40px;border:none;border-radius:14px;cursor:pointer;
-  font-family:'Space Mono',monospace;font-size:.88rem;font-weight:700;letter-spacing:.07em;
-  background:linear-gradient(135deg,var(--accent2),#c0006a);color:#fff;
-  box-shadow:0 0 32px rgba(255,60,172,.45);
-  transition:transform .15s,opacity .15s;
-  margin-top:8px;
-}
+#btnStart{padding:18px 40px;border:none;border-radius:14px;cursor:pointer;font-family:'Space Mono',monospace;font-size:.88rem;font-weight:700;letter-spacing:.07em;background:linear-gradient(135deg,var(--accent2),#c0006a);color:#fff;box-shadow:0 0 32px rgba(255,60,172,.45);transition:transform .15s,opacity .15s;margin-top:8px;}
 #btnStart:active{transform:scale(.95);}
 #btnStart:disabled{opacity:.5;pointer-events:none;}
 .splash-note{font-family:'Space Mono',monospace;font-size:.6rem;color:var(--dim);}
 
-/* ── TOP HEADER ── */
-.top-header{
-  position:relative;z-index:100;flex-shrink:0;height:52px;
-  padding:0 16px;padding-top:var(--safe-t);
-  display:flex;align-items:center;justify-content:space-between;
-  border-bottom:1px solid var(--border);
-  background:rgba(6,10,15,.85);backdrop-filter:blur(12px);
-}
+/* HEADER */
+.top-header{position:relative;z-index:100;flex-shrink:0;height:52px;padding:0 16px;padding-top:var(--safe-t);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(6,10,15,.85);backdrop-filter:blur(12px);}
 .logo{font-family:'Space Mono',monospace;font-size:1.05rem;letter-spacing:.1em;color:var(--accent);text-shadow:var(--glow);}
 .logo span{color:var(--accent2);}
 .live-badge{font-family:'Space Mono',monospace;font-size:.58rem;padding:3px 8px;border-radius:2px;border:1px solid var(--accent);color:var(--accent);}
 
-/* ── STEP NAV ── */
-.step-indicator{
-  flex-shrink:0;display:flex;align-items:center;padding:10px 16px;
-  background:var(--surface);border-bottom:1px solid var(--border);position:relative;z-index:90;
-}
+/* STEP NAV */
+.step-indicator{flex-shrink:0;display:flex;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);position:relative;z-index:90;}
 .step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;position:relative;padding:4px 0;}
 .step-item::after{content:'';position:absolute;top:14px;left:50%;width:100%;height:1px;background:var(--border);z-index:-1;}
 .step-item:last-child::after{display:none;}
@@ -77,19 +54,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .step-item.done .step-label{color:rgba(0,255,224,.6);}
 .step-item.done::after{background:rgba(0,255,224,.3);}
 
-/* ── CONTENT ── */
+/* CONTENT */
 .content-area{flex:1;overflow:hidden;position:relative;}
+body{display:flex;flex-direction:column;}
 .screens{display:flex;width:300%;height:100%;transition:transform .35s cubic-bezier(.4,0,.2,1);}
 .screen{width:33.333%;height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;}
 .screen::-webkit-scrollbar{display:none;}
 
-/* ── SCREEN 1 ── */
+/* S1 */
 .s1-body{flex:1;display:flex;flex-direction:column;padding:16px;gap:14px;padding-bottom:calc(76px + var(--safe-b) + 16px);}
 .upload-zone{border:2px dashed rgba(0,255,224,.28);border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;background:rgba(0,255,224,.02);min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
 .upload-zone:active{background:rgba(0,255,224,.07);border-color:var(--accent);}
-.uz-icon{font-size:2.8rem;}
-.uz-title{font-size:.95rem;font-weight:700;color:var(--accent);}
-.uz-sub{font-size:.72rem;color:var(--dim);}
+.uz-icon{font-size:2.8rem;}.uz-title{font-size:.95rem;font-weight:700;color:var(--accent);}.uz-sub{font-size:.72rem;color:var(--dim);}
 #fileInput{display:none;}
 .preview-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:none;}
 .preview-card.visible{display:block;}
@@ -101,7 +77,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .sample-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border:1px dashed rgba(0,255,224,.2);border-radius:10px;background:transparent;color:var(--dim);font-family:'Space Mono',monospace;font-size:.72rem;cursor:pointer;}
 .sample-btn:active{border-color:var(--accent);color:var(--accent);}
 
-/* ── SCREEN 2 ── */
+/* S2 */
 .s2-body{flex:1;display:flex;flex-direction:column;padding-bottom:calc(76px + var(--safe-b));}
 .viewer-wrap{position:relative;background:radial-gradient(ellipse at center,#091220 0%,var(--bg) 100%);flex:1;min-height:220px;}
 #c3d{width:100%;height:100%;display:block;}
@@ -128,18 +104,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 input[type=range]{width:100%;-webkit-appearance:none;height:4px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(90deg,var(--accent) var(--val,50%),rgba(255,255,255,.1) var(--val,50%));}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%;box-shadow:var(--glow);}
 
-/* ── SCREEN 3 ── */
+/* S3 */
 .s3-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px 20px;padding-bottom:calc(76px + var(--safe-b) + 16px);text-align:center;}
-.ar-promo-title{font-size:1.3rem;font-weight:700;}
-.ar-promo-title em{font-style:normal;color:var(--accent2);}
+.ar-promo-title{font-size:1.3rem;font-weight:700;}.ar-promo-title em{font-style:normal;color:var(--accent2);}
 .ar-promo-desc{font-size:.82rem;color:var(--dim);line-height:1.7;}
 .ar-feature-list{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;}
 .ar-feature{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:left;}
-.af-icon{font-size:1.3rem;flex-shrink:0;}
-.af-text{font-size:.75rem;color:var(--dim);line-height:1.5;}
+.af-icon{font-size:1.3rem;flex-shrink:0;}.af-text{font-size:.75rem;color:var(--dim);line-height:1.5;}
 .af-text strong{color:var(--text);display:block;margin-bottom:2px;}
 
-/* ── ACTION BAR ── */
+/* ACTION BAR */
 .action-bar{position:fixed;bottom:0;left:0;right:0;z-index:150;background:rgba(6,10,15,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:10px 16px;padding-bottom:calc(10px + var(--safe-b));height:calc(76px + var(--safe-b));display:flex;align-items:center;}
 .ab-pane{display:none;gap:10px;width:100%;}
 .ab-pane.on{display:flex;}
@@ -151,19 +125,34 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .btn-icon{width:50px;height:50px;flex-shrink:0;border:1.5px solid var(--border);border-radius:10px;background:var(--card);color:var(--dim);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .btn-icon:active{border-color:var(--accent);color:var(--accent);}
 
-/* ── AR OVERLAY ── */
+/* AR OVERLAY */
 #arOverlay{display:none;position:fixed;inset:0;z-index:200;background:#000;touch-action:none;}
 #arVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 #arCanvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;}
+
 .ar-topbar{position:absolute;top:0;left:0;right:0;padding:12px 16px;padding-top:calc(12px + var(--safe-t));display:flex;align-items:center;justify-content:space-between;background:linear-gradient(rgba(0,0,0,.65),transparent);z-index:10;}
 .ar-top-left{display:flex;align-items:center;gap:10px;}
 .ar-logo-sm{font-family:'Space Mono',monospace;font-size:.85rem;color:var(--accent);letter-spacing:.1em;}
 .ar-logo-sm span{color:var(--accent2);}
 .rec-badge{font-family:'Space Mono',monospace;font-size:.68rem;color:#ff4444;background:rgba(255,0,0,.14);border:1px solid rgba(255,0,0,.38);padding:3px 9px;border-radius:10px;animation:blink .8s infinite;}
 .btn-ar-icon{width:38px;height:38px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;}
-.ar-hint{position:absolute;top:62px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.55);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:40px;padding:7px 16px;z-index:10;font-family:'Space Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.6);white-space:nowrap;transition:opacity .6s;}
+
+/* Plane scan hint */
+.ar-hint{position:absolute;top:62px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);border-radius:40px;padding:8px 18px;z-index:10;font-family:'Space Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.7);white-space:nowrap;transition:opacity .5s;}
 .ar-hint.hide{opacity:0;pointer-events:none;}
 .hint-sep{color:rgba(255,255,255,.2);}
+
+/* Plane status bar */
+#planeStatus{position:absolute;left:50%;transform:translateX(-50%);bottom:130px;z-index:20;
+  font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.08em;
+  padding:6px 16px;border-radius:20px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(8px);
+  border:1px solid rgba(0,255,224,.25);
+  color:var(--accent);
+  transition:opacity .4s;pointer-events:none;}
+#planeStatus.hidden{opacity:0;}
+
+/* AR bottom */
 .ar-bottom{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.9));padding-bottom:calc(8px + var(--safe-b));z-index:10;}
 .ar-obj-strip{display:flex;align-items:center;gap:8px;padding:8px 14px;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.07);}
 .ar-obj-strip::-webkit-scrollbar{display:none;}
@@ -179,9 +168,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .btn-arc.rec{background:#ff4444;color:#fff;}
 .rec-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;}
 .obj-count{font-family:'Space Mono',monospace;font-size:.66rem;color:var(--accent);background:rgba(0,255,224,.1);border:1px solid rgba(0,255,224,.2);padding:4px 9px;border-radius:12px;white-space:nowrap;}
+
+/* Place ring */
 .place-ring{position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid var(--accent);pointer-events:none;transform:translate(-50%,-50%) scale(0);opacity:0;transition:transform .35s ease-out,opacity .35s;z-index:15;}
 
-/* ── SCREENSHOT POPUP ── */
+/* Screenshot */
 #ssPopup{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
 #ssPopup img{max-width:90vw;max-height:68vh;border:2px solid var(--accent);border-radius:8px;}
 .ss-btns{display:flex;gap:12px;}
@@ -189,7 +180,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 .ss-btns a{background:var(--accent);color:#000;font-weight:700;}
 .ss-btns button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);}
 
-/* ── TOAST ── */
+/* Toast */
 #toast{position:fixed;bottom:calc(76px + var(--safe-b) + 12px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--card);border:1px solid var(--accent);color:var(--text);font-family:'Space Mono',monospace;font-size:.72rem;padding:10px 18px;border-radius:6px;opacity:0;transition:all .3s;pointer-events:none;z-index:300;white-space:nowrap;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -211,11 +202,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <!-- HEADER -->
 <header class="top-header">
   <div class="logo">AR<span>.</span>FLASH</div>
-  <div class="live-badge">2.5D AR</div>
+  <div class="live-badge">PLANE AR</div>
 </header>
 
 <!-- STEP NAV -->
-<nav class="step-indicator" id="stepNav">
+<nav class="step-indicator">
   <div class="step-item active" onclick="goStep(0)"><div class="step-num">1</div><div class="step-label">画像</div></div>
   <div class="step-item" onclick="goStep(1)"><div class="step-num">2</div><div class="step-label">スタイル</div></div>
   <div class="step-item" onclick="goStep(2)"><div class="step-num">3</div><div class="step-label">AR体験</div></div>
@@ -224,7 +215,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <!-- SCREENS -->
 <main class="content-area">
   <div class="screens" id="screens">
-
     <!-- S1 -->
     <section class="screen">
       <div class="s1-body">
@@ -244,14 +234,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
         <button class="sample-btn" id="btnDemo">🦕 T-Rex サンプルで試す</button>
       </div>
     </section>
-
     <!-- S2 -->
     <section class="screen">
       <div class="s2-body">
         <div class="viewer-wrap" id="canvasWrap">
           <canvas id="c3d"></canvas>
           <div class="viewer-badge-row">
-            <div class="vbadge">WebGL</div>
+            <div class="vbadge">2.5D</div>
             <div class="vbadge" id="liveBadge">READY</div>
           </div>
         </div>
@@ -273,37 +262,26 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
           </div>
           <div class="ctrl-label">調整</div>
           <div class="slider-group">
-            <div class="slider-row">
-              <div class="slider-label">奥行き <strong id="vDepth">40</strong></div>
-              <input type="range" id="rDepth" min="5" max="100" value="40">
-            </div>
-            <div class="slider-row">
-              <div class="slider-label">サイズ <strong id="vSize">1.0</strong>×</div>
-              <input type="range" id="rSize" min="3" max="20" value="10">
-            </div>
-            <div class="slider-row">
-              <div class="slider-label">速度 <strong id="vSpeed">1.0</strong></div>
-              <input type="range" id="rSpeed" min="1" max="30" value="10">
-            </div>
+            <div class="slider-row"><div class="slider-label">奥行き <strong id="vDepth">40</strong></div><input type="range" id="rDepth" min="5" max="100" value="40"></div>
+            <div class="slider-row"><div class="slider-label">サイズ <strong id="vSize">1.0</strong>×</div><input type="range" id="rSize" min="3" max="20" value="10"></div>
+            <div class="slider-row"><div class="slider-label">速度 <strong id="vSpeed">1.0</strong></div><input type="range" id="rSpeed" min="1" max="30" value="10"></div>
           </div>
         </div>
       </div>
     </section>
-
     <!-- S3 -->
     <section class="screen">
       <div class="s3-body">
         <div style="font-size:4rem">📱</div>
-        <div class="ar-promo-title">現実世界に<em>3D配置</em></div>
-        <p class="ar-promo-desc">カメラを起動してタップするだけ。<br>画像がその場に浮かんで見えます。</p>
+        <div class="ar-promo-title">現実世界に<em>平面認識AR</em></div>
+        <p class="ar-promo-desc">カメラで床・机を認識してタップ。<br>その平面に3Dオブジェクトを固定配置します。</p>
         <div class="ar-feature-list">
-          <div class="ar-feature"><div class="af-icon">＋</div><div class="af-text"><strong>複数配置</strong>タップで何個でも設置</div></div>
-          <div class="ar-feature"><div class="af-icon">✥</div><div class="af-text"><strong>移動・スケール</strong>長押しドラッグ・ピンチで調整</div></div>
-          <div class="ar-feature"><div class="af-icon">🎬</div><div class="af-text"><strong>録画・スクリーンショット</strong>AR映像をそのまま保存</div></div>
+          <div class="ar-feature"><div class="af-icon">📐</div><div class="af-text"><strong>平面検出</strong>床・テーブルなどの水平面を自動認識</div></div>
+          <div class="ar-feature"><div class="af-icon">📌</div><div class="af-text"><strong>平面固定</strong>配置後はカメラ移動しても位置が安定</div></div>
+          <div class="ar-feature"><div class="af-icon">✥</div><div class="af-text"><strong>移動・スケール</strong>長押しドラッグ・ピンチで再調整</div></div>
         </div>
       </div>
     </section>
-
   </div>
 </main>
 
@@ -328,6 +306,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 <div id="arOverlay">
   <video id="arVideo" autoplay muted playsinline></video>
   <canvas id="arCanvas"></canvas>
+
   <div class="ar-topbar">
     <div class="ar-top-left">
       <div class="ar-logo-sm">AR<span>.</span>FLASH</div>
@@ -335,11 +314,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
     </div>
     <button class="btn-ar-icon" id="btnArClose">✕</button>
   </div>
+
   <div class="ar-hint" id="arHint">
-    <span>＋ タップで追加</span><span class="hint-sep">｜</span>
-    <span>長押しで移動</span><span class="hint-sep">｜</span>
-    <span>ピンチでサイズ</span>
+    <span>📷 カメラを床・机に向けて平面を検出</span>
   </div>
+
+  <!-- Plane status -->
+  <div id="planeStatus" class="hidden">平面検出中...</div>
+
   <div class="ar-bottom">
     <div class="ar-obj-strip">
       <div class="strip-label">配置済み</div>
@@ -357,6 +339,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
       </div>
     </div>
   </div>
+
   <div class="place-ring" id="placeRing"></div>
 </div>
 
@@ -376,42 +359,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 // STATE
 // ============================================================
 const S = {
-  imgEl: null, imgSrc: null,
-  style: 'float', fx: 'glow',
-  depth: 40, size: 1.0, speed: 1.0,
-  raf: null
+  imgEl:null, imgSrc:null,
+  style:'float', fx:'glow',
+  depth:40, size:1.0, speed:1.0,
+  raf:null
 };
-
 const TREX = 'https://nippon-jp.github.io/AR/T-Rex.PNG';
 
 // ============================================================
 // UTILS
 // ============================================================
-function toast(msg, ms=2200){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), ms);
+function toast(msg,ms=2200){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
 }
-function rgv(el){ el.style.setProperty('--val', ((el.value-el.min)/(el.max-el.min)*100).toFixed(1)+'%'); }
+function rgv(el){ el.style.setProperty('--val',((el.value-el.min)/(el.max-el.min)*100).toFixed(1)+'%'); }
 
 // ============================================================
-// SPLASH — one tap starts everything
+// SPLASH
 // ============================================================
-document.getElementById('btnStart').addEventListener('click', function(){
-  this.textContent = '読み込み中...';
-  this.disabled = true;
-
-  // Load T-Rex, then launch AR
-  loadImgSrc(TREX, 'T-Rex.PNG', ()=>{
-    // Dismiss splash
-    const sp = document.getElementById('splash');
+document.getElementById('btnStart').addEventListener('click',function(){
+  this.textContent='読み込み中...'; this.disabled=true;
+  loadImgSrc(TREX,'T-Rex.PNG',()=>{
+    const sp=document.getElementById('splash');
     sp.classList.add('out');
-    setTimeout(()=>{ sp.style.display='none'; }, 450);
-    // Launch AR (called from within a user gesture — works in all browsers)
+    setTimeout(()=>{ sp.style.display='none'; },450);
     launchAR();
-  }, ()=>{
-    this.textContent = '⚠ 再試行';
-    this.disabled = false;
+  },()=>{
+    this.textContent='⚠ 再試行'; this.disabled=false;
     toast('画像の読み込みに失敗しました');
   });
 });
@@ -419,75 +395,67 @@ document.getElementById('btnStart').addEventListener('click', function(){
 // ============================================================
 // IMAGE LOADING
 // ============================================================
-function loadImgSrc(src, name, onOk, onErr){
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => {
-    S.imgEl = img; S.imgSrc = src;
-    document.getElementById('prevImg').src = src;
+function loadImgSrc(src,name,onOk,onErr){
+  const img=new Image(); img.crossOrigin='anonymous';
+  img.onload=()=>{
+    S.imgEl=img; S.imgSrc=src;
+    document.getElementById('prevImg').src=src;
     document.getElementById('previewCard').classList.add('visible');
-    document.getElementById('imgInfo').textContent = img.width+'×'+img.height;
-    document.getElementById('btnNext1').disabled = false;
-    document.getElementById('btnLaunchAR').disabled = false;
-    document.getElementById('infoText').textContent = name+' — '+img.width+'×'+img.height+'px';
+    document.getElementById('imgInfo').textContent=img.width+'×'+img.height;
+    document.getElementById('btnNext1').disabled=false;
+    document.getElementById('btnLaunchAR').disabled=false;
+    document.getElementById('infoText').textContent=name+' — '+img.width+'×'+img.height+'px';
     launchPreview();
     if(onOk) onOk();
   };
-  img.onerror = () => { if(onErr) onErr(); else toast('⚠ 読み込み失敗'); };
-  img.src = src;
+  img.onerror=()=>{ if(onErr) onErr(); else toast('⚠ 読み込み失敗'); };
+  img.src=src;
 }
-
-// File upload
-document.getElementById('uploadZone').addEventListener('click', ()=>document.getElementById('fileInput').click());
-document.getElementById('fileInput').addEventListener('change', function(){
+document.getElementById('uploadZone').addEventListener('click',()=>document.getElementById('fileInput').click());
+document.getElementById('fileInput').addEventListener('change',function(){
   if(!this.files[0]) return;
-  const r = new FileReader();
-  r.onload = e => loadImgSrc(e.target.result, this.files[0].name);
+  const r=new FileReader();
+  r.onload=e=>loadImgSrc(e.target.result,this.files[0].name);
   r.readAsDataURL(this.files[0]);
 });
-
-// Sample buttons
-function loadSample(cb){ loadImgSrc(TREX, 'T-Rex.PNG', cb); }
-document.getElementById('btnDemo').addEventListener('click', ()=>loadSample());
-document.getElementById('btnDemo2').addEventListener('click', ()=>loadSample(()=>setTimeout(()=>goStep(1),300)));
+document.getElementById('btnDemo').addEventListener('click',()=>loadImgSrc(TREX,'T-Rex.PNG'));
+document.getElementById('btnDemo2').addEventListener('click',()=>loadImgSrc(TREX,'T-Rex.PNG',()=>setTimeout(()=>goStep(1),300)));
 
 // ============================================================
 // STEP NAV
 // ============================================================
-let step = 0;
+let step=0;
 function goStep(n){
   if(n===step) return;
-  if(n>0 && !S.imgEl){ toast('先に画像を選択してください'); return; }
-  step = n;
-  document.getElementById('screens').style.transform = `translateX(${-n*33.333}%)`;
+  if(n>0&&!S.imgEl){ toast('先に画像を選択してください'); return; }
+  step=n;
+  document.getElementById('screens').style.transform=`translateX(${-n*33.333}%)`;
   document.querySelectorAll('.step-item').forEach((el,i)=>{
     el.classList.remove('active','done');
-    if(i<n) el.classList.add('done');
-    else if(i===n) el.classList.add('active');
+    if(i<n) el.classList.add('done'); else if(i===n) el.classList.add('active');
   });
   ['ab0','ab1','ab2'].forEach((id,i)=>document.getElementById(id).classList.toggle('on',i===n));
-  if(n===1 && S.imgEl) launchPreview();
+  if(n===1&&S.imgEl) launchPreview();
 }
-document.getElementById('btnNext1').addEventListener('click', ()=>goStep(1));
-document.getElementById('btnBack1').addEventListener('click', ()=>goStep(0));
-document.getElementById('btnNext2').addEventListener('click', ()=>goStep(2));
-document.getElementById('btnBack2').addEventListener('click', ()=>goStep(1));
-document.getElementById('btn3d').addEventListener('click', launchPreview);
-document.getElementById('btnLaunchAR').addEventListener('click', launchAR);
+document.getElementById('btnNext1').addEventListener('click',()=>goStep(1));
+document.getElementById('btnBack1').addEventListener('click',()=>goStep(0));
+document.getElementById('btnNext2').addEventListener('click',()=>goStep(2));
+document.getElementById('btnBack2').addEventListener('click',()=>goStep(1));
+document.getElementById('btn3d').addEventListener('click',launchPreview);
+document.getElementById('btnLaunchAR').addEventListener('click',launchAR);
 
 // ============================================================
 // CONTROLS
 // ============================================================
-document.getElementById('rDepth').addEventListener('input', function(){ S.depth=+this.value; document.getElementById('vDepth').textContent=this.value; rgv(this); });
-document.getElementById('rSize').addEventListener('input', function(){ S.size=(+this.value/10).toFixed(1); document.getElementById('vSize').textContent=S.size; rgv(this); });
-document.getElementById('rSpeed').addEventListener('input', function(){ S.speed=(+this.value/10).toFixed(1); document.getElementById('vSpeed').textContent=S.speed; rgv(this); });
+document.getElementById('rDepth').addEventListener('input',function(){ S.depth=+this.value; document.getElementById('vDepth').textContent=this.value; rgv(this); });
+document.getElementById('rSize').addEventListener('input',function(){ S.size=(+this.value/10).toFixed(1); document.getElementById('vSize').textContent=S.size; rgv(this); });
+document.getElementById('rSpeed').addEventListener('input',function(){ S.speed=(+this.value/10).toFixed(1); document.getElementById('vSpeed').textContent=S.speed; rgv(this); });
 [document.getElementById('rDepth'),document.getElementById('rSize'),document.getElementById('rSpeed')].forEach(rgv);
 
 document.querySelectorAll('#styleGrid .style-btn').forEach(b=>{
   b.addEventListener('click',()=>{
     document.querySelectorAll('#styleGrid .style-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active'); S.style=b.dataset.s;
-    if(S.imgEl) launchPreview();
+    b.classList.add('active'); S.style=b.dataset.s; if(S.imgEl) launchPreview();
   });
 });
 document.querySelectorAll('#fxRow .fx-btn').forEach(b=>{
@@ -505,24 +473,17 @@ function launchPreview(){
   document.getElementById('liveBadge').textContent='LIVE';
   document.getElementById('liveBadge').classList.add('live');
   if(S.raf) cancelAnimationFrame(S.raf);
-  S.time = 0;
-  const cv = document.getElementById('c3d');
-  const wr = document.getElementById('canvasWrap');
-  cv.width = wr.clientWidth; cv.height = wr.clientHeight;
+  const cv=document.getElementById('c3d'), wr=document.getElementById('canvasWrap');
+  cv.width=wr.clientWidth; cv.height=wr.clientHeight;
   render3D(cv);
 }
-
 function render3D(cv){
-  const ctx = cv.getContext('2d');
-  const img = S.imgEl, W=cv.width, H=cv.height;
+  const ctx=cv.getContext('2d'), img=S.imgEl, W=cv.width, H=cv.height;
   let shards=[];
-  if(S.style==='shatter'){
-    for(let i=0;i<18;i++) shards.push({x:Math.random(),y:Math.random(),w:.15+Math.random()*.25,h:.15+Math.random()*.25,vx:(Math.random()-.5)*.003,vy:(Math.random()-.5)*.003,vr:(Math.random()-.5)*.02,r:0,d:.3+Math.random()*.7});
-  }
+  if(S.style==='shatter') for(let i=0;i<18;i++) shards.push({x:Math.random(),y:Math.random(),w:.15+Math.random()*.25,h:.15+Math.random()*.25,vx:(Math.random()-.5)*.003,vy:(Math.random()-.5)*.003,vr:(Math.random()-.5)*.02,r:0,d:.3+Math.random()*.7});
   let t=0;
   function frame(){
-    t += 0.016 * S.speed;
-    ctx.clearRect(0,0,W,H);
+    t+=0.016*S.speed; ctx.clearRect(0,0,W,H);
     ctx.fillStyle='#060a0f'; ctx.fillRect(0,0,W,H);
     ctx.strokeStyle='rgba(0,255,224,.04)'; ctx.lineWidth=1;
     for(let x=0;x<W;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
@@ -532,65 +493,272 @@ function render3D(cv){
     else if(S.style==='tilt') drawTilt(ctx,img,cx,cy,sz,t);
     else if(S.style==='wave') drawWave(ctx,img,cx,cy,sz,t);
     else drawShatter(ctx,img,cx,cy,sz,t,shards,W,H);
-    S.raf = requestAnimationFrame(frame);
+    S.raf=requestAnimationFrame(frame);
   }
   frame();
 }
 function drawFloat(ctx,img,cx,cy,sz,t){
   const d=S.depth*.3;
   for(let i=5;i>=0;i--){
-    const k=i/6, ox=Math.sin(t*.7)*k*d, oy=Math.cos(t*.5)*k*d, a=i===0?1:.12-i*.012;
-    ctx.save(); ctx.globalAlpha=a; ctx.translate(cx+ox,cy+oy); ctx.scale(1-i*.02,1-i*.02);
-    drawCard(ctx,img,sz,i===0); ctx.restore();
+    const k=i/6,ox=Math.sin(t*.7)*k*d,oy=Math.cos(t*.5)*k*d,a=i===0?1:.12-i*.012;
+    ctx.save();ctx.globalAlpha=a;ctx.translate(cx+ox,cy+oy);ctx.scale(1-i*.02,1-i*.02);
+    drawCard(ctx,img,sz,i===0);ctx.restore();
   }
   applyFx(ctx,cx,cy,sz,t);
 }
 function drawTilt(ctx,img,cx,cy,sz,t){
   const rx=Math.sin(t*.6)*S.depth*.4;
-  ctx.save(); ctx.translate(cx,cy);
-  ctx.transform(1-Math.abs(rx)*.003,rx*.005*.3,0,1-Math.abs(rx*.005)*.1,0,0);
-  ctx.shadowColor='rgba(0,0,0,.6)'; ctx.shadowBlur=40; ctx.shadowOffsetY=20;
-  drawCard(ctx,img,sz,true); ctx.restore(); applyFx(ctx,cx,cy,sz,t);
+  ctx.save();ctx.translate(cx,cy);ctx.transform(1-Math.abs(rx)*.003,rx*.005*.3,0,1-Math.abs(rx*.005)*.1,0,0);
+  ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=40;ctx.shadowOffsetY=20;
+  drawCard(ctx,img,sz,true);ctx.restore();applyFx(ctx,cx,cy,sz,t);
 }
 function drawWave(ctx,img,cx,cy,sz,t){
-  const hw=sz/2, segs=24, segH=sz/segs, amp=S.depth*.15;
-  ctx.save(); ctx.translate(cx-hw,cy-hw);
-  ctx.save(); ctx.beginPath(); ctx.rect(0,0,sz,sz); ctx.clip();
+  const hw=sz/2,segs=24,segH=sz/segs,amp=S.depth*.15;
+  ctx.save();ctx.translate(cx-hw,cy-hw);ctx.save();ctx.beginPath();ctx.rect(0,0,sz,sz);ctx.clip();
   for(let i=0;i<segs;i++) ctx.drawImage(img,0,img.height*(i/segs),img.width,img.height/segs,Math.sin(t*1.5+i*.4)*amp,i*segH,sz,segH+1);
-  ctx.restore(); ctx.strokeStyle='rgba(0,255,224,.5)'; ctx.lineWidth=2; ctx.strokeRect(0,0,sz,sz);
-  ctx.restore(); applyFx(ctx,cx,cy,sz,t);
+  ctx.restore();ctx.strokeStyle='rgba(0,255,224,.5)';ctx.lineWidth=2;ctx.strokeRect(0,0,sz,sz);ctx.restore();applyFx(ctx,cx,cy,sz,t);
 }
 function drawShatter(ctx,img,cx,cy,sz,t,shards,W,H){
   shards.forEach(s=>{
-    s.r+=s.vr*S.speed; s.x+=s.vx*S.speed; s.y+=s.vy*S.speed;
-    if(s.x<-.2||s.x>1.2) s.vx*=-1; if(s.y<-.2||s.y>1.2) s.vy*=-1;
-    const sw=s.w*sz, sh=s.h*sz;
-    ctx.save(); ctx.translate(s.x*W,s.y*H); ctx.rotate(s.r); ctx.globalAlpha=.85;
+    s.r+=s.vr*S.speed;s.x+=s.vx*S.speed;s.y+=s.vy*S.speed;
+    if(s.x<-.2||s.x>1.2)s.vx*=-1;if(s.y<-.2||s.y>1.2)s.vy*=-1;
+    const sw=s.w*sz,sh=s.h*sz;
+    ctx.save();ctx.translate(s.x*W,s.y*H);ctx.rotate(s.r);ctx.globalAlpha=.85;
     ctx.drawImage(img,s.x*img.width,s.y*img.height,s.w*img.width,s.h*img.height,-sw/2,-sh/2,sw,sh);
-    ctx.strokeStyle=`rgba(0,255,224,${.3*s.d})`; ctx.lineWidth=1.5; ctx.strokeRect(-sw/2,-sh/2,sw,sh);
-    ctx.restore();
+    ctx.strokeStyle=`rgba(0,255,224,${.3*s.d})`;ctx.lineWidth=1.5;ctx.strokeRect(-sw/2,-sh/2,sw,sh);ctx.restore();
   });
 }
 function drawCard(ctx,img,sz,border){
   const hw=sz/2; ctx.drawImage(img,-hw,-hw,sz,sz);
   if(border){
-    ctx.strokeStyle='rgba(0,255,224,.6)'; ctx.lineWidth=2; ctx.strokeRect(-hw,-hw,sz,sz);
-    const cl=16; ctx.strokeStyle='#00ffe0'; ctx.lineWidth=3;
+    ctx.strokeStyle='rgba(0,255,224,.6)';ctx.lineWidth=2;ctx.strokeRect(-hw,-hw,sz,sz);
+    const cl=16;ctx.strokeStyle='#00ffe0';ctx.lineWidth=3;
     [[-hw,-hw,1,1],[-hw+cl,-hw,-1,1],[hw-cl,-hw,1,1],[hw,-hw,-1,1],
      [-hw,hw,1,-1],[-hw+cl,hw,-1,-1],[hw-cl,hw,1,-1],[hw,hw,-1,-1]].forEach(([x,y,sx,sy])=>{
-      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+sx*cl,y);
-      ctx.moveTo(x,y); ctx.lineTo(x,y+sy*cl); ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+sx*cl,y);ctx.moveTo(x,y);ctx.lineTo(x,y+sy*cl);ctx.stroke();
     });
   }
 }
 function applyFx(ctx,cx,cy,sz,t){
-  if(S.fx==='glow'){ const r=ctx.createRadialGradient(cx,cy,sz*.2,cx,cy,sz*.8); r.addColorStop(0,'rgba(0,255,224,.08)'); r.addColorStop(1,'transparent'); ctx.fillStyle=r; ctx.fillRect(cx-sz,cy-sz,sz*2,sz*2); }
-  if(S.fx==='scan'){ const sy=cy-sz/2+((t*80)%(sz+40)); const g=ctx.createLinearGradient(0,sy-8,0,sy+8); g.addColorStop(0,'transparent'); g.addColorStop(.5,'rgba(0,255,224,.25)'); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.fillRect(cx-sz/2-20,sy-8,sz+40,16); }
-  if(S.fx==='shadow'){ const g=ctx.createLinearGradient(cx,cy+sz*.3,cx,cy+sz*.7); g.addColorStop(0,'rgba(0,0,0,.7)'); g.addColorStop(1,'transparent'); ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(cx,cy+sz*.45,sz*.4,sz*.08,0,0,Math.PI*2); ctx.fill(); }
+  if(S.fx==='glow'){const r=ctx.createRadialGradient(cx,cy,sz*.2,cx,cy,sz*.8);r.addColorStop(0,'rgba(0,255,224,.08)');r.addColorStop(1,'transparent');ctx.fillStyle=r;ctx.fillRect(cx-sz,cy-sz,sz*2,sz*2);}
+  if(S.fx==='scan'){const sy=cy-sz/2+((t*80)%(sz+40));const g=ctx.createLinearGradient(0,sy-8,0,sy+8);g.addColorStop(0,'transparent');g.addColorStop(.5,'rgba(0,255,224,.25)');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.fillRect(cx-sz/2-20,sy-8,sz+40,16);}
+  if(S.fx==='shadow'){const g=ctx.createLinearGradient(cx,cy+sz*.3,cx,cy+sz*.7);g.addColorStop(0,'rgba(0,0,0,.7)');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy+sz*.45,sz*.4,sz*.08,0,0,Math.PI*2);ctx.fill();}
 }
 
 // ============================================================
-// AR
+// PLANE DETECTION ENGINE
+// ============================================================
+// Uses optical flow + homography estimation on successive video frames
+// to detect horizontal surfaces and estimate a vanishing-point-based
+// ground plane. Objects placed on detected planes get a 3D perspective
+// transform that matches the estimated plane normal.
+
+const plane = {
+  detected: false,
+  confidence: 0,       // 0-1
+  // Estimated horizon line (y coordinate in screen space)
+  horizonY: null,
+  // Vanishing point
+  vpX: null, vpY: null,
+  // Rotation from gravity (tilt of phone relative to ground)
+  tiltX: 0, tiltY: 0,
+  // Feature points tracked across frames
+  features: [],
+  // Previous frame data
+  prevFrame: null,
+  prevGray: null,
+  // Scan canvas (small, for perf)
+  scanCv: null,
+  scanCtx: null,
+  scanW: 80, scanH: 60,
+  // Status
+  status: 'scanning', // scanning | found | locked
+};
+
+function initPlaneDetector(video){
+  plane.scanCv = document.createElement('canvas');
+  plane.scanCv.width = plane.scanW;
+  plane.scanCv.height = plane.scanH;
+  plane.scanCtx = plane.scanCv.getContext('2d',{willReadFrequently:true});
+
+  // Device orientation for gravity vector
+  window.addEventListener('deviceorientation', e=>{
+    // beta: front-back tilt (-180 to 180), gamma: left-right (-90 to 90)
+    plane.tiltX = ((e.gamma||0)) / 90;   // -1 = left, 1 = right
+    plane.tiltY = ((e.beta||45) - 45) / 90; // 0 = flat, 1 = upright
+  });
+
+  // Estimate phone inclination from beta alone for horizon placement
+  window.addEventListener('deviceorientation', e=>{
+    const beta = e.beta || 45;
+    // beta ~45 = phone pointing at floor at 45deg
+    // Map to screen: beta 0 (flat) => horizon near bottom, beta 90 (upright) => horizon at ~50%
+    const norm = Math.max(0, Math.min(1, (beta - 20) / 70));
+    plane.horizonFromOrientation = norm; // 0=bottom, 1=top of screen
+  });
+}
+
+function updatePlaneDetection(video, W, H){
+  if(!plane.scanCv) return;
+  const sc = plane.scanCtx, sw = plane.scanW, sh = plane.scanH;
+  sc.drawImage(video, 0, 0, sw, sh);
+  const frame = sc.getImageData(0,0,sw,sh);
+  const gray = toGray(frame.data, sw, sh);
+
+  if(plane.prevGray){
+    // Optical flow: sample grid of points, compare brightness displacement
+    const flows = computeOpticalFlow(plane.prevGray, gray, sw, sh);
+
+    // Estimate horizon from flow vectors
+    // On a flat floor: points below horizon flow outward/down, above flow inward/up
+    const analysis = analyzeFlow(flows, sw, sh);
+    updatePlaneEstimate(analysis, W, H);
+  }
+
+  plane.prevGray = gray;
+}
+
+function toGray(data, w, h){
+  const g = new Float32Array(w*h);
+  for(let i=0;i<w*h;i++){
+    const p=i*4;
+    g[i] = (data[p]*0.299 + data[p+1]*0.587 + data[p+2]*0.114) / 255;
+  }
+  return g;
+}
+
+function computeOpticalFlow(prev, curr, w, h){
+  const flows = [];
+  const step = 8;
+  for(let y=step;y<h-step;y+=step){
+    for(let x=step;x<w-step;x+=step){
+      // Simple block matching (5x5 patch)
+      let bestDx=0, bestDy=0, bestScore=Infinity;
+      for(let dy=-3;dy<=3;dy++){
+        for(let dx=-3;dx<=3;dx++){
+          let score=0;
+          for(let py=-2;py<=2;py++){
+            for(let px=-2;px<=2;px++){
+              const pi=(y+py)*w+(x+px);
+              const qi=Math.max(0,Math.min(h-1,y+py+dy))*w+Math.max(0,Math.min(w-1,x+px+dx));
+              const d=prev[pi]-curr[qi]; score+=d*d;
+            }
+          }
+          if(score<bestScore){bestScore=score;bestDx=dx;bestDy=dy;}
+        }
+      }
+      if(bestScore<0.15) flows.push({x:x/w, y:y/h, dx:bestDx, dy:bestDy});
+    }
+  }
+  return flows;
+}
+
+function analyzeFlow(flows, sw, sh){
+  if(flows.length<4) return null;
+  // Find dominant flow direction
+  let sumDy=0, sumAbs=0;
+  flows.forEach(f=>{ sumDy+=f.dy; sumAbs+=Math.abs(f.dy); });
+  const avgDy = sumDy / flows.length;
+
+  // Count points with downward vs upward flow
+  let downBelow=0, upAbove=0, total=0;
+  const midY = 0.5;
+  flows.forEach(f=>{
+    if(f.y > midY && f.dy > 0) downBelow++;
+    if(f.y < midY && f.dy < 0) upAbove++;
+    total++;
+  });
+
+  // Compute flow divergence point (where flow changes direction = horizon)
+  // Group by row and find sign change
+  const rows = {};
+  flows.forEach(f=>{
+    const ry = Math.round(f.y*10)/10;
+    if(!rows[ry]){rows[ry]={dy:0,count:0};}
+    rows[ry].dy += f.dy; rows[ry].count++;
+  });
+  const sortedRows = Object.keys(rows).map(k=>({y:+k, avg:rows[k].dy/rows[k].count})).sort((a,b)=>a.y-b.y);
+  let horizonRow = 0.4; // default
+  for(let i=0;i<sortedRows.length-1;i++){
+    if(sortedRows[i].avg<0 && sortedRows[i+1].avg>=0){
+      horizonRow = (sortedRows[i].y + sortedRows[i+1].y)/2; break;
+    }
+  }
+
+  const planeScore = (downBelow + upAbove) / Math.max(1, total);
+  return { horizonRow, planeScore, avgDy };
+}
+
+function updatePlaneEstimate(analysis, W, H){
+  if(!analysis) return;
+
+  // Blend with orientation-based estimate if available
+  let horizonNorm = analysis.horizonRow;
+  if(plane.horizonFromOrientation !== undefined){
+    // Mix: 30% optical flow, 70% orientation (more reliable)
+    horizonNorm = horizonNorm * 0.3 + (1 - plane.horizonFromOrientation) * 0.7;
+  }
+
+  // Smooth
+  if(plane.horizonY === null){
+    plane.horizonY = horizonNorm * H;
+  } else {
+    plane.horizonY = plane.horizonY * 0.92 + horizonNorm * H * 0.08;
+  }
+
+  // Build confidence from plane score + motion
+  const motionConf = Math.min(1, analysis.planeScore * 2.5);
+  plane.confidence = plane.confidence * 0.95 + motionConf * 0.05;
+
+  // Update status
+  if(plane.confidence > 0.35){
+    plane.detected = true;
+    plane.status = 'found';
+  }
+  // After first detection, mark locked
+  if(plane.confidence > 0.6){
+    plane.status = 'locked';
+  }
+}
+
+// Given a screen tap (x,y), compute the 3D world position on the detected plane
+// Returns { wx, wy, wz, scaleY, skewX } for perspective rendering
+function projectToPlane(tapX, tapY, W, H){
+  const hy = plane.horizonY !== null ? plane.horizonY : H * 0.4;
+  // Distance below horizon determines depth (further from camera = smaller)
+  const belowHorizon = Math.max(1, tapY - hy);
+  const totalFloor = Math.max(1, H - hy);
+  const depthT = belowHorizon / totalFloor; // 0=far, 1=near
+
+  // Perspective scale: objects near horizon are smaller
+  const perspScale = 0.35 + depthT * 0.65;
+
+  // Horizontal offset from center, compressed toward VP at horizon
+  const centerX = W / 2;
+  const dx = tapX - centerX;
+  const compressedX = centerX + dx * perspScale;
+
+  // Vertical position: map floor position to screen
+  const groundY = tapY;
+
+  // Shadow offset direction (away from VP)
+  const vpX = plane.vpX !== null ? plane.vpX : centerX;
+  const shadowDirX = (compressedX - vpX) * 0.04;
+  const shadowDirY = 8 * perspScale;
+
+  return {
+    screenX: compressedX,
+    screenY: groundY,
+    scale: perspScale,
+    shadowDirX,
+    shadowDirY,
+    depthT,
+    horizonY: hy,
+  };
+}
+
+// ============================================================
+// AR STATE
 // ============================================================
 const ar = {
   stream:null, raf:null, objects:[], selectedId:null, time:0,
@@ -598,26 +766,35 @@ const ar = {
   drag:null, dragSX:0, dragSY:0, dragOX:0, dragOY:0,
   lpTimer:null, dragging:false,
   pinchDist:null, pinchObjSz:null, pinchObj:null,
-  tiltX:0, tiltY:0, evInited:false,
-  _tapX:0, _tapY:0, _tapObj:null
+  evInited:false,
+  _tapX:0, _tapY:0, _tapObj:null,
+  planeFrameCount:0,
 };
 let objId=0;
 
+// ============================================================
+// AR LAUNCH
+// ============================================================
 async function launchAR(){
   if(!S.imgEl){ toast('先に画像を選択してください'); return; }
   document.getElementById('arOverlay').style.display='block';
+  plane.detected=false; plane.confidence=0; plane.horizonY=null; plane.status='scanning'; plane.prevGray=null;
   try{
-    ar.stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});
-    const v = document.getElementById('arVideo');
-    v.srcObject = ar.stream; await v.play();
-    ar.objects=[]; ar.time=0;
-    setTimeout(()=>{
-      addObj(window.innerWidth/2, window.innerHeight/2);
-      setTimeout(()=>document.getElementById('arHint').classList.add('hide'), 3500);
-    },400);
+    ar.stream = await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'environment', width:{ideal:1280}, height:{ideal:720}}
+    });
+    const v=document.getElementById('arVideo');
+    v.srcObject=ar.stream; await v.play();
+    ar.objects=[]; ar.time=0; ar.planeFrameCount=0;
+    initPlaneDetector(v);
     if(!ar.evInited){ initAREvents(); ar.evInited=true; }
     renderAR();
     updateCount();
+    // Update hint
+    document.getElementById('arHint').classList.remove('hide');
+    document.getElementById('arHint').querySelector('span').textContent='📷 カメラを床・机に向けて平面を検出';
+    // Hide hint after 6s
+    setTimeout(()=>document.getElementById('arHint').classList.add('hide'), 6000);
   } catch(e){
     toast('カメラの許可が必要です');
     document.getElementById('arOverlay').style.display='none';
@@ -634,23 +811,55 @@ function closeAR(){
   ar.objects=[]; refreshThumbs(); updateCount();
 }
 
-document.getElementById('btnArClose').addEventListener('click', closeAR);
+document.getElementById('btnArClose').addEventListener('click',closeAR);
 document.getElementById('btnClearAll').addEventListener('click',()=>{ ar.objects=[]; refreshThumbs(); updateCount(); toast('全削除'); });
 document.getElementById('btnUndo').addEventListener('click',()=>{ if(ar.objects.length){ ar.objects.pop(); refreshThumbs(); updateCount(); toast('↩ 元に戻しました'); }});
-document.getElementById('btnShot').addEventListener('click', doScreenshot);
+document.getElementById('btnShot').addEventListener('click',doScreenshot);
 document.getElementById('ssClose').addEventListener('click',()=>document.getElementById('ssPopup').style.display='none');
 document.getElementById('btnRecord').addEventListener('click',()=>{ if(ar.isRec) stopRec(); else startRec(); });
 
-function addObj(x,y){
-  const sz=Math.min(window.innerWidth,window.innerHeight)*.28*S.size;
-  ar.objects.push({id:++objId,x,y,size:sz,bobOff:Math.random()*Math.PI*2,img:S.imgEl,flash:0});
+// ============================================================
+// OBJECT MANAGEMENT
+// ============================================================
+function addObj(tapX, tapY){
+  const W=window.innerWidth, H=window.innerHeight;
+  const proj = projectToPlane(tapX, tapY, W, H);
+  const baseSize = Math.min(W,H)*0.28*S.size;
+  const sz = baseSize * proj.scale;
+
+  const obj={
+    id:++objId,
+    // World tap position (used for re-projecting on move)
+    tapX, tapY,
+    // Projected screen position
+    x: proj.screenX, y: proj.screenY,
+    size: sz,
+    baseSize: baseSize,
+    bobOff: Math.random()*Math.PI*2,
+    img: S.imgEl,
+    flash: 0,
+    // Plane info snapshot
+    proj,
+    // Fixed to plane (stop floating after placement)
+    planted: true,
+  };
+  ar.objects.push(obj);
   refreshThumbs(); updateCount();
+
+  // Ring pop
   const r=document.getElementById('placeRing');
-  r.style.left=x+'px'; r.style.top=y+'px'; r.style.transform='translate(-50%,-50%) scale(0)'; r.style.opacity='1';
+  r.style.left=tapX+'px'; r.style.top=tapY+'px';
+  r.style.transform='translate(-50%,-50%) scale(0)'; r.style.opacity='1';
   requestAnimationFrame(()=>{ r.style.transform='translate(-50%,-50%) scale(2)'; r.style.opacity='0'; });
+
+  toast('📌 平面に配置しました');
 }
+
 function hitObj(x,y){
-  for(let i=ar.objects.length-1;i>=0;i--){ const o=ar.objects[i],hw=o.size/2; if(x>=o.x-hw&&x<=o.x+hw&&y>=o.y-hw&&y<=o.y+hw) return o; }
+  for(let i=ar.objects.length-1;i>=0;i--){
+    const o=ar.objects[i], hw=o.size/2;
+    if(x>=o.x-hw&&x<=o.x+hw&&y>=o.y-hw&&y<=o.y+hw) return o;
+  }
   return null;
 }
 function updateCount(){ document.getElementById('objCount').textContent=ar.objects.length+' 個'; }
@@ -663,134 +872,347 @@ function refreshThumbs(){
   });
 }
 
+// ============================================================
+// AR EVENTS
+// ============================================================
 function initAREvents(){
-  const cv=document.getElementById('arCanvas'), LP=350;
+  const cv=document.getElementById('arCanvas'), LP=380;
+
+  // TOUCH
   cv.addEventListener('touchstart',e=>{
     e.preventDefault();
     if(e.touches.length===2){
       if(ar.lpTimer){clearTimeout(ar.lpTimer);ar.lpTimer=null;} ar.dragging=false;
-      const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+      const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
       ar.pinchDist=Math.hypot(dx,dy);
-      const mx=(e.touches[0].clientX+e.touches[1].clientX)/2, my=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      const mx=(e.touches[0].clientX+e.touches[1].clientX)/2,my=(e.touches[0].clientY+e.touches[1].clientY)/2;
       const rc=cv.getBoundingClientRect();
       ar.pinchObj=hitObj(mx-rc.left,my-rc.top)||ar.objects[ar.objects.length-1]||null;
       if(ar.pinchObj) ar.pinchObjSz=ar.pinchObj.size; return;
     }
-    const t0=e.touches[0], rc=cv.getBoundingClientRect();
-    const x=t0.clientX-rc.left, y=t0.clientY-rc.top;
+    const t0=e.touches[0],rc=cv.getBoundingClientRect();
+    const x=t0.clientX-rc.left,y=t0.clientY-rc.top;
     ar._tapX=x; ar._tapY=y; ar._tapObj=hitObj(x,y);
     if(ar._tapObj){
       ar.lpTimer=setTimeout(()=>{
-        ar.lpTimer=null; ar.dragging=true; ar.drag=ar._tapObj;
-        ar.dragSX=x; ar.dragSY=y; ar.dragOX=ar._tapObj.x; ar.dragOY=ar._tapObj.y;
-        ar.selectedId=ar._tapObj.id; ar._tapObj.flash=6;
+        ar.lpTimer=null;ar.dragging=true;ar.drag=ar._tapObj;
+        ar.dragSX=x;ar.dragSY=y;ar.dragOX=ar._tapObj.tapX;ar.dragOY=ar._tapObj.tapY;
+        ar.selectedId=ar._tapObj.id;ar._tapObj.flash=8;
+        toast('✥ ドラッグで移動');
       },LP);
     }
   },{passive:false});
+
   cv.addEventListener('touchmove',e=>{
     e.preventDefault();
     if(e.touches.length===2&&ar.pinchObj&&ar.pinchDist){
-      const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
-      ar.pinchObj.size=Math.max(40,ar.pinchObjSz*(Math.hypot(dx,dy)/ar.pinchDist)); return;
+      const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+      const newDist=Math.hypot(dx,dy);
+      const ratio=newDist/ar.pinchDist;
+      ar.pinchObj.size=Math.max(30,ar.pinchObjSz*ratio);
+      ar.pinchObj.baseSize=ar.pinchObj.size/Math.max(0.1,ar.pinchObj.proj.scale);
+      return;
     }
     if(ar.dragging&&ar.drag){
       const rc=cv.getBoundingClientRect();
-      ar.drag.x=ar.dragOX+(e.touches[0].clientX-rc.left-ar.dragSX);
-      ar.drag.y=ar.dragOY+(e.touches[0].clientY-rc.top-ar.dragSY); return;
+      const nx=e.touches[0].clientX-rc.left, ny=e.touches[0].clientY-rc.top;
+      // Re-project new tap to plane
+      const W=window.innerWidth,H=window.innerHeight;
+      const newTapX=ar.dragOX+(nx-ar.dragSX);
+      const newTapY=ar.dragOY+(ny-ar.dragSY);
+      const proj=projectToPlane(newTapX,newTapY,W,H);
+      ar.drag.tapX=newTapX; ar.drag.tapY=newTapY;
+      ar.drag.x=proj.screenX; ar.drag.y=proj.screenY;
+      ar.drag.size=ar.drag.baseSize*proj.scale;
+      ar.drag.proj=proj;
+      return;
     }
     if(ar.lpTimer&&e.touches.length===1){
       const rc=cv.getBoundingClientRect();
       if(Math.hypot(e.touches[0].clientX-rc.left-ar._tapX,e.touches[0].clientY-rc.top-ar._tapY)>8){
-        clearTimeout(ar.lpTimer); ar.lpTimer=null;
+        clearTimeout(ar.lpTimer);ar.lpTimer=null;
       }
     }
   },{passive:false});
+
   cv.addEventListener('touchend',e=>{
     e.preventDefault();
     if(e.touches.length<2){ar.pinchObj=null;ar.pinchDist=null;}
-    ar.dragging=false; ar.drag=null;
-    if(ar.lpTimer){ clearTimeout(ar.lpTimer); ar.lpTimer=null; if(!ar._tapObj) addObj(ar._tapX,ar._tapY); }
+    ar.dragging=false;ar.drag=null;
+    if(ar.lpTimer){
+      clearTimeout(ar.lpTimer);ar.lpTimer=null;
+      if(!ar._tapObj){
+        // Only place if below horizon (on the floor plane)
+        const W=window.innerWidth,H=window.innerHeight;
+        const hy=plane.horizonY||H*0.4;
+        if(ar._tapY > hy - 20){
+          addObj(ar._tapX,ar._tapY);
+        } else {
+          toast('平面の上をタップしてください');
+        }
+      }
+    }
   },{passive:false});
-  // Mouse
+
+  // MOUSE
   let md=false,mlt=null,mdrag=false;
   cv.addEventListener('mousedown',e=>{
     md=true;
-    const rc=cv.getBoundingClientRect(), x=e.clientX-rc.left, y=e.clientY-rc.top;
-    ar._tapX=x; ar._tapY=y; ar._tapObj=hitObj(x,y);
-    if(ar._tapObj) mlt=setTimeout(()=>{ mlt=null;mdrag=true;ar.drag=ar._tapObj;ar.dragSX=x;ar.dragSY=y;ar.dragOX=ar._tapObj.x;ar.dragOY=ar._tapObj.y; cv.style.cursor='grabbing'; },LP);
+    const rc=cv.getBoundingClientRect(),x=e.clientX-rc.left,y=e.clientY-rc.top;
+    ar._tapX=x;ar._tapY=y;ar._tapObj=hitObj(x,y);
+    if(ar._tapObj) mlt=setTimeout(()=>{ mlt=null;mdrag=true;ar.drag=ar._tapObj;ar.dragSX=x;ar.dragSY=y;ar.dragOX=ar._tapObj.tapX;ar.dragOY=ar._tapObj.tapY; cv.style.cursor='grabbing'; },LP);
   });
   cv.addEventListener('mousemove',e=>{
     if(!md) return;
-    const rc=cv.getBoundingClientRect(), x=e.clientX-rc.left, y=e.clientY-rc.top;
-    if(mdrag&&ar.drag){ar.drag.x=ar.dragOX+(x-ar.dragSX);ar.drag.y=ar.dragOY+(y-ar.dragSY);}
-    else if(mlt&&Math.hypot(x-ar._tapX,y-ar._tapY)>6){clearTimeout(mlt);mlt=null;}
+    const rc=cv.getBoundingClientRect(),x=e.clientX-rc.left,y=e.clientY-rc.top;
+    if(mdrag&&ar.drag){
+      const W=window.innerWidth,H=window.innerHeight;
+      const ntx=ar.dragOX+(x-ar.dragSX),nty=ar.dragOY+(y-ar.dragSY);
+      const proj=projectToPlane(ntx,nty,W,H);
+      ar.drag.tapX=ntx;ar.drag.tapY=nty;ar.drag.x=proj.screenX;ar.drag.y=proj.screenY;
+      ar.drag.size=ar.drag.baseSize*proj.scale;ar.drag.proj=proj;
+    } else if(mlt&&Math.hypot(x-ar._tapX,y-ar._tapY)>6){clearTimeout(mlt);mlt=null;}
   });
   cv.addEventListener('mouseup',e=>{
-    md=false; cv.style.cursor='crosshair';
-    if(mlt){clearTimeout(mlt);mlt=null;if(!ar._tapObj){const rc=cv.getBoundingClientRect();addObj(e.clientX-rc.left,e.clientY-rc.top);}}
-    mdrag=false; ar.drag=null;
+    md=false;cv.style.cursor='crosshair';
+    if(mlt){
+      clearTimeout(mlt);mlt=null;
+      if(!ar._tapObj){
+        const rc=cv.getBoundingClientRect();
+        addObj(e.clientX-rc.left,e.clientY-rc.top);
+      }
+    }
+    mdrag=false;ar.drag=null;
   });
-  window.addEventListener('deviceorientation',e=>{ ar.tiltX=(e.gamma||0)/60; ar.tiltY=((e.beta||45)-45)/60; });
 }
 
+// ============================================================
+// AR RENDER
+// ============================================================
 function renderAR(){
-  const cv=document.getElementById('arCanvas'), ctx=cv.getContext('2d');
+  const cv=document.getElementById('arCanvas'),ctx=cv.getContext('2d');
+  const video=document.getElementById('arVideo');
   function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
-  resize(); window.addEventListener('resize',resize);
+  resize();window.addEventListener('resize',resize);
+
   function frame(){
     if(!ar.stream) return;
     ar.time+=0.016*S.speed;
-    const t=ar.time, W=cv.width, H=cv.height;
+    const t=ar.time,W=cv.width,H=cv.height;
     ctx.clearRect(0,0,W,H);
-    ar.objects.forEach((o,i)=>{
-      const bob=Math.sin(t*.9+o.bobOff)*7;
-      const tx=ar.tiltX*S.depth*1.5, ty=ar.tiltY*S.depth*1.5;
-      const px=o.x+tx, py=o.y+ty+bob, hw=o.size/2;
-      ctx.save(); ctx.translate(px,py);
-      ctx.transform(1-Math.abs(ar.tiltX)*.018,ar.tiltX*.018,ar.tiltY*.014,1-Math.abs(ar.tiltY)*.014,0,0);
-      if(S.fx==='glow'){const g=ctx.createRadialGradient(0,0,0,0,0,o.size*.7);g.addColorStop(0,'rgba(0,255,224,.18)');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,o.size*.7,0,Math.PI*2);ctx.fill();}
-      ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=30;ctx.shadowOffsetY=15;
-      ctx.drawImage(o.img,-hw,-hw,o.size,o.size);ctx.shadowColor='transparent';
-      if(S.fx==='scan'){const sy=-hw+((t*55)%o.size);const sg=ctx.createLinearGradient(0,sy-5,0,sy+5);sg.addColorStop(0,'transparent');sg.addColorStop(.5,'rgba(0,255,224,.45)');sg.addColorStop(1,'transparent');ctx.fillStyle=sg;ctx.fillRect(-hw,sy-5,o.size,10);}
-      const bc=ar.selectedId===o.id?'rgba(255,60,172,.9)':'rgba(0,255,224,.65)';
-      ctx.strokeStyle=bc;ctx.lineWidth=ar.selectedId===o.id?3:2;ctx.shadowColor=ar.selectedId===o.id?'rgba(255,60,172,.5)':'rgba(0,255,224,.4)';ctx.shadowBlur=12;
+
+    // --- Plane detection (every 3 frames) ---
+    ar.planeFrameCount++;
+    if(ar.planeFrameCount%3===0) updatePlaneDetection(video,W,H);
+
+    // --- Update plane status UI ---
+    updatePlaneStatusUI(W,H);
+
+    // --- Draw plane grid overlay ---
+    drawPlaneGrid(ctx,W,H,t);
+
+    // --- Draw objects ---
+    // Sort by y (depth) so nearer objects render on top
+    const sorted=[...ar.objects].sort((a,b)=>a.y-b.y);
+    sorted.forEach((o,i)=>{
+      const hw=o.size/2;
+      const isSel=ar.selectedId===o.id;
+      const proj=o.proj;
+
+      // Subtle bob (less for planted objects to feel grounded)
+      const bobAmt = o.planted ? 3 : 8;
+      const bob=Math.sin(t*0.9+o.bobOff)*bobAmt;
+      const drawY = o.y + bob;
+
+      ctx.save();
+      ctx.translate(o.x, drawY);
+
+      // Perspective skew based on plane angle
+      const horizonY = plane.horizonY || H*0.4;
+      const distFromCenter = (o.x - W/2) / (W/2);
+      const depthT = proj ? proj.depthT : 0.5;
+      // Horizontal squeeze simulates perspective
+      const hSqueeze = 0.92 + depthT*0.08;
+      // Vertical skew: objects toward vanishing point lean inward
+      const vSkew = distFromCenter * (1-depthT) * 0.06;
+      ctx.transform(hSqueeze, vSkew, 0, 1, 0, 0);
+
+      // Glow
+      if(S.fx==='glow'){
+        const gr=ctx.createRadialGradient(0,0,0,0,0,o.size*.7);
+        gr.addColorStop(0,'rgba(0,255,224,.15)');gr.addColorStop(1,'transparent');
+        ctx.fillStyle=gr;ctx.beginPath();ctx.arc(0,0,o.size*.7,0,Math.PI*2);ctx.fill();
+      }
+
+      // Shadow on plane surface
+      ctx.save();
+      ctx.globalAlpha=0.25*depthT;
+      ctx.filter='blur(8px)';
+      ctx.fillStyle='rgba(0,0,0,1)';
+      ctx.beginPath();
+      ctx.ellipse(proj?proj.shadowDirX:0, hw*0.55 + (proj?proj.shadowDirY:8), hw*0.7, hw*0.12, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      // Draw image
+      ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=20;ctx.shadowOffsetY=10;
+      ctx.drawImage(o.img,-hw,-hw,o.size,o.size);
+      ctx.shadowColor='transparent';
+
+      // Scan line
+      if(S.fx==='scan'){
+        const sy=-hw+((t*55)%o.size);
+        const sg=ctx.createLinearGradient(0,sy-5,0,sy+5);
+        sg.addColorStop(0,'transparent');sg.addColorStop(.5,'rgba(0,255,224,.45)');sg.addColorStop(1,'transparent');
+        ctx.fillStyle=sg;ctx.fillRect(-hw,sy-5,o.size,10);
+      }
+
+      // Border + corner marks
+      const bc=isSel?'rgba(255,60,172,.95)':'rgba(0,255,224,.7)';
+      ctx.strokeStyle=bc;ctx.lineWidth=isSel?3:1.5;
+      ctx.shadowColor=isSel?'rgba(255,60,172,.6)':'rgba(0,255,224,.35)';ctx.shadowBlur=10;
       ctx.strokeRect(-hw,-hw,o.size,o.size);
-      const cl=14;ctx.shadowBlur=0;ctx.lineWidth=2.5;
+      const cl=12;ctx.shadowBlur=0;ctx.lineWidth=2.5;
       [[-hw,-hw,1,1],[hw,-hw,-1,1],[-hw,hw,1,-1],[hw,hw,-1,-1]].forEach(([cx2,cy2,sx,sy2])=>{
         ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+sx*cl,cy2);ctx.stroke();
         ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2,cy2+sy2*cl);ctx.stroke();
       });
-      if(ar.dragging&&ar.drag===o){ctx.fillStyle='rgba(0,255,224,.1)';ctx.fillRect(-hw,-hw,o.size,o.size);}
-      if(o.flash>0){ctx.fillStyle=`rgba(0,255,224,${o.flash/6*.35})`;ctx.fillRect(-hw,-hw,o.size,o.size);o.flash--;}
+
+      // Planted anchor dot at base center
+      if(o.planted){
+        ctx.fillStyle=isSel?'rgba(255,60,172,.9)':'rgba(0,255,224,.8)';
+        ctx.beginPath();ctx.arc(0,hw+4,4,0,Math.PI*2);ctx.fill();
+        // Anchor line down to shadow
+        ctx.strokeStyle=isSel?'rgba(255,60,172,.3)':'rgba(0,255,224,.2)';
+        ctx.lineWidth=1;ctx.setLineDash([3,3]);
+        ctx.beginPath();ctx.moveTo(0,hw);ctx.lineTo(0,hw+20);ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Drag highlight
+      if(ar.dragging&&ar.drag===o){ctx.fillStyle='rgba(0,255,224,.08)';ctx.fillRect(-hw,-hw,o.size,o.size);}
+      // Flash
+      if(o.flash>0){ctx.fillStyle=`rgba(0,255,224,${o.flash/8*.4})`;ctx.fillRect(-hw,-hw,o.size,o.size);o.flash--;}
+
+      // Index badge
       ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(-hw,-hw,22,16);
       ctx.fillStyle='rgba(0,255,224,.9)';ctx.font='9px monospace';ctx.textAlign='left';ctx.textBaseline='top';
-      ctx.fillText(`#${i+1}`,-hw+3,-hw+2);
+      ctx.fillText(`#${ar.objects.indexOf(o)+1}`,-hw+3,-hw+2);
+
       ctx.restore();
-      ctx.save();ctx.globalAlpha=.18;ctx.filter='blur(10px)';ctx.fillStyle='#000';
-      ctx.beginPath();ctx.ellipse(px,o.y+o.size*.48+ty,o.size*.4,o.size*.07,0,0,Math.PI*2);ctx.fill();ctx.restore();
     });
-    // HUD
-    const m=20,l=28;ctx.strokeStyle='rgba(0,255,224,.35)';ctx.lineWidth=2;
-    [[m,m,1,1],[W-m,m,-1,1],[m,H-m,1,-1],[W-m,H-m,-1,-1]].forEach(([x,y,sx,sy])=>{
-      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+sx*l,y);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+sy*l);ctx.stroke();
-    });
-    ctx.fillStyle='rgba(0,255,224,.5)';ctx.font='11px monospace';ctx.textAlign='right';ctx.textBaseline='bottom';
-    ctx.fillText(`OBJ:${ar.objects.length}`,W-m-4,H-m-4);
-    if(ar.objects.length===0){
-      const pr=(t%1.5)*60+15,pa=1-(t%1.5)/1.5;
-      ctx.strokeStyle=`rgba(0,255,224,${pa*.4})`;ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.arc(W/2,H/2,pr,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle='rgba(0,255,224,.4)';ctx.lineWidth=1;
-      [[W/2-20,H/2,W/2+20,H/2],[W/2,H/2-20,W/2,H/2+20]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
-    }
+
+    // HUD corners
+    drawHUD(ctx,W,H);
+
     ar.raf=requestAnimationFrame(frame);
   }
   frame();
 }
 
+// ── Plane grid overlay ──
+function drawPlaneGrid(ctx, W, H, t){
+  const hy = plane.horizonY || H*0.4;
+  if(!plane.detected && plane.status==='scanning') return;
+
+  const alpha = Math.min(0.35, plane.confidence * 0.55);
+  if(alpha<0.02) return;
+
+  const cx = W/2;
+  const floorH = H - hy;
+  const cols = 8;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Perspective grid lines (converging to horizon)
+  ctx.strokeStyle='rgba(0,255,224,1)';
+  ctx.lineWidth=0.8;
+
+  // Horizontal lines (parallel, getting closer together toward horizon)
+  const hLines = 6;
+  for(let i=0;i<=hLines;i++){
+    const frac = Math.pow(i/hLines, 1.8); // exponential compression
+    const y = H - frac * floorH;
+    if(y < hy) break;
+    const perspW = W * (1 - frac*0.3);
+    ctx.beginPath();
+    ctx.moveTo(cx - perspW/2, y);
+    ctx.lineTo(cx + perspW/2, y);
+    ctx.stroke();
+  }
+
+  // Converging vertical lines to VP at horizon center
+  for(let i=-cols/2;i<=cols/2;i++){
+    const xBase = cx + (i/cols) * W * 0.9;
+    const xTop  = cx + (i/cols) * W * 0.05; // converge toward center
+    ctx.beginPath();
+    ctx.moveTo(xBase, H);
+    ctx.lineTo(xTop, hy);
+    ctx.stroke();
+  }
+
+  // Horizon line
+  ctx.strokeStyle='rgba(0,255,224,.8)';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([8,6]);
+  ctx.beginPath();
+  ctx.moveTo(0,hy);ctx.lineTo(W,hy);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // "PLANE DETECTED" label at horizon
+  if(plane.status==='locked'){
+    ctx.fillStyle='rgba(0,255,224,.7)';
+    ctx.font='bold 10px monospace';
+    ctx.textAlign='right';ctx.textBaseline='bottom';
+    ctx.fillText('PLANE LOCKED', W-16, hy-6);
+  }
+
+  ctx.restore();
+}
+
+// ── Plane status pill ──
+function updatePlaneStatusUI(W,H){
+  const el=document.getElementById('planeStatus');
+  if(plane.status==='scanning'){
+    el.classList.remove('hidden');
+    el.textContent='⟳ 平面スキャン中...';
+    el.style.borderColor='rgba(255,255,255,.2)';
+    el.style.color='rgba(255,255,255,.5)';
+  } else if(plane.status==='found'){
+    el.classList.remove('hidden');
+    el.textContent='◎ 平面を検出 — タップで配置';
+    el.style.borderColor='rgba(0,255,224,.4)';
+    el.style.color='var(--accent)';
+  } else if(plane.status==='locked'){
+    if(ar.objects.length===0){
+      el.classList.remove('hidden');
+      el.textContent='✓ 平面確定 — タップで配置';
+      el.style.borderColor='rgba(0,255,224,.5)';
+      el.style.color='var(--accent)';
+    } else {
+      el.classList.add('hidden');
+    }
+  }
+}
+
+// ── HUD corners ──
+function drawHUD(ctx,W,H){
+  const m=20,l=28;
+  ctx.strokeStyle='rgba(0,255,224,.3)';ctx.lineWidth=2;
+  [[m,m,1,1],[W-m,m,-1,1],[m,H-m,1,-1],[W-m,H-m,-1,-1]].forEach(([x,y,sx,sy])=>{
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+sx*l,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+sy*l);ctx.stroke();
+  });
+  ctx.fillStyle='rgba(0,255,224,.4)';ctx.font='11px monospace';ctx.textAlign='right';ctx.textBaseline='bottom';
+  ctx.fillText(`OBJ:${ar.objects.length}`,W-m-4,H-m-4);
+}
+
+// ============================================================
+// RECORDING & SCREENSHOT
+// ============================================================
 function doScreenshot(){
-  const v=document.getElementById('arVideo'), ac=document.getElementById('arCanvas');
+  const v=document.getElementById('arVideo'),ac=document.getElementById('arCanvas');
   const W=window.innerWidth,H=window.innerHeight,sc=document.createElement('canvas');
   sc.width=W;sc.height=H;const sctx=sc.getContext('2d');
   if(ar.stream) sctx.drawImage(v,0,0,W,H);else{sctx.fillStyle='#060a0f';sctx.fillRect(0,0,W,H);}
@@ -799,11 +1221,10 @@ function doScreenshot(){
   document.getElementById('ssImg').src=u;document.getElementById('ssDl').href=u;
   document.getElementById('ssPopup').style.display='flex';
 }
-
 function startRec(){
   const cv=document.getElementById('arCanvas'),v=document.getElementById('arVideo');
   const comp=document.createElement('canvas');const cctx=comp.getContext('2d');
-  function cf(){ comp.width=window.innerWidth;comp.height=window.innerHeight;if(ar.stream)cctx.drawImage(v,0,0,comp.width,comp.height);cctx.drawImage(cv,0,0,comp.width,comp.height);ar._rf=requestAnimationFrame(cf); }
+  function cf(){comp.width=window.innerWidth;comp.height=window.innerHeight;if(ar.stream)cctx.drawImage(v,0,0,comp.width,comp.height);cctx.drawImage(cv,0,0,comp.width,comp.height);ar._rf=requestAnimationFrame(cf);}
   ar._rf=requestAnimationFrame(cf);
   const mt=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';
   try{ar.mr=new MediaRecorder(comp.captureStream(30),mt?{mimeType:mt}:{});}catch(e){toast('録画非対応');return;}
