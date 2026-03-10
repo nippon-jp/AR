@@ -3,53 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AR Studio | Simple 3D</title>
+    <title>AR Studio | Improved Simple 3D</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
     <style>
-        :root { --accent: #a68b6a; --bg: #050505; --danger: #ff4444; --glass: rgba(255, 255, 255, 0.08); }
-        body { margin: 0; overflow: hidden; background-color: var(--bg); font-family: 'Segoe UI', sans-serif; color: #eee; touch-action: none; }
+        :root { 
+            --accent: #a68b6a; 
+            --bg: #050505; 
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --text: #eee;
+            --danger: #ff4444; 
+        }
+
+        body.light-mode {
+            --bg: #f5f5f5;
+            --card-bg: rgba(0, 0, 0, 0.05);
+            --text: #222;
+        }
+
+        body { margin: 0; overflow: hidden; background-color: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text); touch-action: none; transition: background-color 0.3s; }
         
-        /* メインメニュー */
         #landing {
             position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%); z-index: 100; transition: opacity 0.4s;
+            background: radial-gradient(circle at center, var(--bg) 0%, #000 100%); z-index: 100; transition: opacity 0.4s;
         }
+        body.light-mode #landing { background: radial-gradient(circle at center, var(--bg) 0%, #ddd 100%); }
+
         .card {
-            background: var(--glass); backdrop-filter: blur(15px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; max-width: 350px; width: 85%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: var(--card-bg); backdrop-filter: blur(15px); padding: 30px; border-radius: 24px; border: 1px solid rgba(128,128,128,0.2);
+            text-align: center; max-width: 350px; width: 85%; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
         #preview-container {
-            width: 180px; height: 180px; border: 2px dashed #444; border-radius: 20px; margin: 20px auto;
-            display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000;
+            width: 180px; height: 180px; border: 2px dashed #888; border-radius: 20px; margin: 20px auto;
+            display: flex; align-items: center; justify-content: center; overflow: hidden; background: rgba(0,0,0,0.1);
             position: relative; cursor: pointer;
         }
         #preview-img { max-width: 100%; max-height: 100%; display: none; object-fit: contain; }
         
-        /* 進捗表示 */
         #loading-overlay {
             position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center;
             background: var(--bg); z-index: 150;
         }
         .progress-box { width: 70%; max-width: 250px; text-align: center; }
-        .progress-bg { width: 100%; height: 4px; background: #222; border-radius: 2px; margin: 15px 0; overflow: hidden; }
+        .progress-bg { width: 100%; height: 4px; background: #88888844; border-radius: 2px; margin: 15px 0; overflow: hidden; }
         #progress-bar { width: 0%; height: 100%; background: var(--accent); transition: width 0.1s; }
         
         button {
-            background: var(--accent); color: white; border: none; padding: 14px 30px; border-radius: 50px;
+            background: var(--accent); color: white; border: none; padding: 12px 30px; border-radius: 50px;
             font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; margin: 5px;
         }
-        button:disabled { background: #333; opacity: 0.5; }
+        button:disabled { background: #888; opacity: 0.5; cursor: not-allowed; }
 
-        /* 操作UI */
         #ui-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; display: none; }
         .hud { position: absolute; pointer-events: auto; width: 100%; display: flex; justify-content: center; }
         .top { top: 20px; justify-content: space-between; padding: 0 20px; width: calc(100% - 40px); }
-        .bottom { bottom: 30px; gap: 10px; }
+        .bottom { bottom: 30px; gap: 10px; flex-wrap: wrap; }
         
         #ar-video { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: none; }
         #rec-timer { color: var(--danger); font-family: monospace; font-size: 14px; display: none; margin-top: 5px; font-weight: bold; }
-        canvas { display: block; opacity: 0; transition: opacity 0.5s; }
+        canvas { display: block; opacity: 0; transition: opacity 0.8s; }
         canvas.visible { opacity: 1; }
+
+        .theme-toggle, .ctrl-btn {
+            background: rgba(128, 128, 128, 0.2); color: var(--text); border: 1px solid rgba(128,128,128,0.3);
+            padding: 8px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
+        }
+        .active-ctrl { border-color: var(--accent); color: var(--accent); }
     </style>
 </head>
 <body>
@@ -59,15 +77,18 @@
     <div id="landing">
         <div class="card">
             <h1 style="color: var(--accent); margin: 0; font-size: 24px;">AR Studio</h1>
-            <p style="font-size: 13px; opacity: 0.6; margin: 10px 0;">写真を即座に立体化します</p>
+            <p style="font-size: 13px; opacity: 0.6; margin: 10px 0;">写真を即座に3D化・改善版</p>
             
-            <div id="preview-container" onclick="document.getElementById('file-input').click()">
+            <div id="preview-container" onclick="$('file-input').click()">
                 <span id="placeholder" style="color: var(--accent); font-size: 13px; font-weight: bold;">写真を選択</span>
                 <img id="preview-img">
             </div>
             <input type="file" id="file-input" accept="image/*" style="display: none;">
             
-            <button id="start-btn" disabled>3D作成</button>
+            <button id="start-btn" disabled>読み込み中...</button>
+            <div style="margin-top: 15px;">
+                <button class="theme-toggle" id="theme-btn-landing">🌙 ダーク / ☀️ ライト</button>
+            </div>
         </div>
     </div>
 
@@ -75,7 +96,7 @@
         <div class="progress-box">
             <div id="progress-num" style="font-size: 32px; font-weight: 800; color: var(--accent);">0%</div>
             <div class="progress-bg"><div id="progress-bar"></div></div>
-            <p style="font-size: 11px; opacity: 0.5; letter-spacing: 2px;">STABILIZING MESH...</p>
+            <p style="font-size: 11px; opacity: 0.5; letter-spacing: 2px;">PREPARING 3D CANVAS...</p>
         </div>
     </div>
 
@@ -85,53 +106,84 @@
                 <h2 style="margin:0; font-size: 16px; color: var(--accent);">AR Studio</h2>
                 <div id="rec-timer">REC 00:00</div>
             </div>
-            <button id="stop-btn" style="background: var(--danger); padding: 8px 16px; font-size: 13px;">終了</button>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                <button id="stop-btn" style="background: var(--danger); padding: 8px 16px; font-size: 13px;">終了</button>
+                <button class="theme-toggle" id="theme-btn-hud">🌓 テーマ切替</button>
+            </div>
         </div>
         <div class="hud bottom">
             <button id="ar-btn">ARモード</button>
             <button id="rec-btn">録画開始</button>
+            <button class="ctrl-btn" id="reset-btn">カメラリセット</button>
+            <button class="ctrl-btn" id="auto-btn">オートターン: OFF</button>
         </div>
     </div>
 
     <script>
         const $ = (id) => document.getElementById(id);
-        let scene, camera, renderer, photoObject, animId, skinTex = null;
+        let scene, camera, renderer, photoGroup, animId, skinTex = null;
         let active = false, arActive = false, mediaRec, chunks = [];
-        let timerStart, timerInt;
+        let isDarkMode = true, autoRotate = false;
+        let rY = 0, rX = 0, targetRY = 0, targetRX = 0;
 
-        // --- 画像読み込み ---
+        // --- テーマ切り替え ---
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('light-mode', !isDarkMode);
+            if (scene) {
+                const color = isDarkMode ? 0x050505 : 0xf5f5f5;
+                scene.background = new THREE.Color(color);
+                scene.fog.color = new THREE.Color(color);
+                if (scene.ground) scene.ground.material.color.set(isDarkMode ? 0x111111 : 0xcccccc);
+            }
+        }
+
+        $('theme-btn-landing').addEventListener('click', toggleTheme);
+        $('theme-btn-hud').addEventListener('click', toggleTheme);
+        $('start-btn').textContent = "写真を選んでください";
+
+        // --- 画像読み込みとテクスチャ準備 ---
         $('file-input').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            
             const reader = new FileReader();
             reader.onload = (ev) => {
                 $('preview-img').src = ev.target.result;
                 $('preview-img').style.display = 'block';
                 $('placeholder').style.display = 'none';
-                $('start-btn').disabled = false;
-                
-                // Textureの準備
-                new THREE.TextureLoader().load(ev.target.result, (t) => {
+                $('start-btn').textContent = "テクスチャ準備中...";
+                $('start-btn').disabled = true;
+
+                const loader = new THREE.TextureLoader();
+                loader.load(ev.target.result, (t) => {
                     skinTex = t;
+                    skinTex.colorSpace = THREE.SRGBColorSpace;
+                    $('start-btn').disabled = false;
+                    $('start-btn').textContent = "3D作成開始";
+                }, undefined, (err) => {
+                    alert("画像の読み込みに失敗しました。");
+                    $('start-btn').textContent = "再試行してください";
                 });
             };
             reader.readAsDataURL(file);
         });
 
-        // --- 簡易3D化開始 (高速シミュレーション) ---
+        // --- モデリング開始 ---
         $('start-btn').addEventListener('click', () => {
+            if (!skinTex) return;
             $('loading-overlay').style.display = 'flex';
             let p = 0;
             const int = setInterval(() => {
-                p += Math.random() * 20 + 5;
+                p += Math.random() * 25 + 5;
                 if (p >= 100) {
                     p = 100;
                     clearInterval(int);
-                    setTimeout(launch3D, 300);
+                    setTimeout(launch3D, 200);
                 }
                 $('progress-bar').style.width = p + '%';
                 $('progress-num').textContent = Math.floor(p) + '%';
-            }, 100);
+            }, 80);
         });
 
         function launch3D() {
@@ -145,68 +197,94 @@
             }, 400);
         }
 
-        // --- 3D描画 (簡易立体写真方式) ---
+        // --- 3D描画 (改善された複層立体構造) ---
         function initScene() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050505);
-            scene.fog = new THREE.Fog(0x050505, 5, 30);
+            const bgColor = isDarkMode ? 0x050505 : 0xf5f5f5;
+            scene.background = new THREE.Color(bgColor);
+            scene.fog = new THREE.Fog(bgColor, 5, 40);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 2, 12);
+            camera.position.set(0, 3, 15);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             document.body.appendChild(renderer.domElement);
-            setTimeout(() => renderer.domElement.classList.add('visible'), 50);
+            
+            // 強制表示
+            requestAnimationFrame(() => renderer.domElement.classList.add('visible'));
 
-            // 照明
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-            sun.position.set(5, 10, 5);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            
+            // メインライト
+            const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+            sun.position.set(5, 12, 8);
             sun.castShadow = true;
+            sun.shadow.mapSize.width = 1024;
+            sun.shadow.mapSize.height = 1024;
             scene.add(sun);
 
-            // 地面 (影を受けるため)
+            // マウス追従用スポットライト (立体感を出す)
+            const spotLight = new THREE.SpotLight(0xffffff, 0.5);
+            spotLight.position.set(0, 5, 10);
+            spotLight.angle = Math.PI / 6;
+            spotLight.penumbra = 0.3;
+            scene.add(spotLight);
+            scene.pointerLight = spotLight;
+
             const ground = new THREE.Mesh(
                 new THREE.PlaneGeometry(100, 100),
-                new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1 })
+                new THREE.MeshStandardMaterial({ color: isDarkMode ? 0x111111 : 0xcccccc, roughness: 0.8 })
             );
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
+            scene.ground = ground;
 
-            // 簡易3Dモデル (写真を切り抜きとして配置)
-            // アスペクト比を計算
             const aspect = skinTex.image.width / skinTex.image.height;
             const h = 8;
             const w = h * aspect;
 
-            const geometry = new THREE.PlaneGeometry(w, h);
-            const material = new THREE.MeshStandardMaterial({ 
-                map: skinTex, 
-                transparent: true, 
-                side: THREE.DoubleSide,
-                alphaTest: 0.5 // 透明部分を切り抜く
-            });
-
-            photoObject = new THREE.Mesh(geometry, material);
-            photoObject.position.y = h / 2;
-            photoObject.castShadow = true;
-            scene.add(photoObject);
-
-            // 少しだけ「厚み」を出すための複製 (簡易的な立体感)
-            for(let i=1; i<=3; i++) {
-                const back = photoObject.clone();
-                back.position.z = -i * 0.05;
-                scene.add(back);
+            photoGroup = new THREE.Group();
+            
+            // レイヤード・デプス (5層の厚み)
+            const layers = 6;
+            for(let i=0; i<layers; i++) {
+                const geometry = new THREE.PlaneGeometry(w, h);
+                const material = new THREE.MeshStandardMaterial({ 
+                    map: skinTex, 
+                    transparent: true, 
+                    alphaTest: 0.4,
+                    side: THREE.DoubleSide,
+                    opacity: i === 0 ? 1 : 0.8,
+                    metalness: 0.1,
+                    roughness: 0.5
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.z = -i * 0.04;
+                mesh.castShadow = i === 0;
+                photoGroup.add(mesh);
             }
+            
+            photoGroup.position.y = h / 2 + 0.1;
+            scene.add(photoGroup);
 
-            let rY = 0, rX = 0, lX, lY;
+            // 操作イベント
+            let lX, lY;
             const move = (x, y) => {
-                rY += (x - lX) * 0.01;
-                rX += (y - lY) * 0.01;
+                targetRY += (x - lX) * 0.01;
+                targetRX += (y - lY) * 0.01;
+                
+                // スポットライトをマウス方向に移動
+                const vector = new THREE.Vector3((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1, 0.5);
+                vector.unproject(camera);
+                const dir = vector.sub(camera.position).normalize();
+                const distance = -camera.position.z / dir.z;
+                const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+                scene.pointerLight.position.lerp(pos, 0.1);
+                
                 lX = x; lY = y;
             };
 
@@ -215,25 +293,42 @@
             renderer.domElement.addEventListener('mousedown', (e) => { lX = e.clientX; lY = e.clientY; document.onmousemove = (ev) => move(ev.clientX, ev.clientY); });
             window.addEventListener('mouseup', () => document.onmousemove = null);
 
-            function loop() {
-                if(!active) return;
-                animId = requestAnimationFrame(loop);
-                const t = Date.now() * 0.0015;
-                
-                photoObject.rotation.y += (rY - photoObject.rotation.y) * 0.1;
-                camera.position.y += (Math.max(1, Math.min(15, rX * 10 + 2)) - camera.position.y) * 0.1;
-                camera.lookAt(0, 3, 0);
-
-                // 生きているようなアニメーション (呼吸)
-                const scale = 1 + Math.sin(t) * 0.02;
-                photoObject.scale.set(scale, scale, scale);
-                
-                renderer.render(scene, camera);
-            }
             loop();
         }
 
-        // --- AR & 録画機能 ---
+        function loop() {
+            if(!active) return;
+            animId = requestAnimationFrame(loop);
+            const t = Date.now() * 0.0015;
+            
+            // スムーズな回転
+            if(autoRotate) targetRY += 0.01;
+            
+            rY += (targetRY - rY) * 0.1;
+            rX += (targetRX - rX) * 0.1;
+            
+            photoGroup.rotation.y = rY;
+            camera.position.y = 3 + Math.max(-5, Math.min(10, rX * 5));
+            camera.lookAt(0, 4, 0);
+
+            // 浮遊アニメーション
+            photoGroup.position.y = 4.1 + Math.sin(t) * 0.15;
+            
+            renderer.render(scene, camera);
+        }
+
+        // --- 追加操作ボタン ---
+        $('reset-btn').addEventListener('click', () => {
+            targetRY = 0; targetRX = 0;
+        });
+
+        $('auto-btn').addEventListener('click', () => {
+            autoRotate = !autoRotate;
+            $('auto-btn').textContent = `オートターン: ${autoRotate ? 'ON' : 'OFF'}`;
+            $('auto-btn').classList.toggle('active-ctrl', autoRotate);
+        });
+
+        // --- AR & 録画 ---
         $('ar-btn').addEventListener('click', async () => {
             if (!arActive) {
                 try {
@@ -244,7 +339,7 @@
                     renderer.setClearColor(0x000000, 0);
                     $('ar-btn').textContent = "背景オフ";
                     arActive = true;
-                } catch(e) { alert("カメラの使用が許可されていません"); }
+                } catch(e) { alert("カメラ許可が必要です"); }
             } else location.reload();
         });
 
@@ -253,7 +348,6 @@
                 mediaRec.stop();
                 $('rec-btn').textContent = "録画開始";
                 $('rec-timer').style.display = 'none';
-                clearInterval(timerInt);
             } else {
                 const stream = renderer.domElement.captureStream(30);
                 mediaRec = new MediaRecorder(stream, { mimeType: 'video/webm' });
@@ -270,7 +364,8 @@
                 $('rec-btn').textContent = "停止";
                 $('rec-timer').style.display = 'block';
                 timerStart = Date.now();
-                timerInt = setInterval(() => {
+                const tInt = setInterval(() => {
+                    if (mediaRec.state !== "recording") { clearInterval(tInt); return; }
                     const d = Math.floor((Date.now()-timerStart)/1000);
                     $('rec-timer').textContent = `REC ${String(Math.floor(d/60)).padStart(2,'0')}:${String(d%60).padStart(2,'0')}`;
                 }, 1000);
