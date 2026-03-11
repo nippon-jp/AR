@@ -75,6 +75,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 #ar.show{display:block;}
 #arVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 #arCanvas{position:absolute;top:0;left:0;}
+#arCanvasClean{position:absolute;top:0;left:0;display:none;}
 
 .ar-top{
   position:absolute;top:0;left:0;right:0;
@@ -186,6 +187,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 <div id="ar">
   <video id="arVideo" autoplay muted playsinline></video>
   <canvas id="arCanvas"></canvas>
+  <canvas id="arCanvasClean"></canvas>
 
   <div class="ar-top">
     <div class="ar-logo">AR<em>.</em>FLASH</div>
@@ -199,6 +201,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 
   <div class="ar-bottom">
     <button class="btn-ar" id="btnChangeImg">🖼</button>
+      <button class="btn-ar" id="btnLock" title="位置固定">🔓</button>
     <div class="ar-bottom-center">
       <div class="gesture-hint" id="gestureHint">長押し:移動 · ピンチ:サイズ · タップ:追加</div>
       <div class="obj-count" id="objCount"></div>
@@ -223,6 +226,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'DM
 'use strict';
 const SAMPLE_URL = 'https://nippon-jp.github.io/AR/T-Rex.PNG';
 let imgEl=null, arStream=null, arRunning=false, arTime=0, rafId=null;
+let locked=false; // 位置固定フラグ
 let objects=[], objSeed=0;
 const g={longTimer:null,isDragging:false,dragObj:null,dragX0:0,dragY0:0,
   dragObjX0:0,dragObjY0:0,pinchObj:null,pinchDist0:0,pinchSize0:0,
@@ -271,7 +275,9 @@ async function startAR(src){
   const video=document.getElementById('arVideo');
   video.srcObject=arStream; await video.play();
   const canvas=document.getElementById('arCanvas');
-  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const clean=document.getElementById('arCanvasClean');
+  canvas.width=clean.width=window.innerWidth;
+  canvas.height=clean.height=window.innerHeight;
   document.getElementById('home').classList.add('hide');
   document.getElementById('ar').classList.add('show');
   objects=[]; arRunning=true; arTime=0;
@@ -286,7 +292,9 @@ async function swapImg(src){
   catch(e){toast('⚠ 読み込み失敗');}
 }
 function closeAR(){
-  stopRec(); arRunning=false;
+  stopRec(); arRunning=false; locked=false;
+  const lb=document.getElementById('btnLock');
+  lb.textContent='🔓'; lb.style.borderColor=''; lb.style.boxShadow='';
   if(rafId)cancelAnimationFrame(rafId);
   if(arStream){arStream.getTracks().forEach(t=>t.stop());arStream=null;}
   objects=[];
@@ -299,6 +307,8 @@ function closeAR(){
 /* ── RENDER ── */
 function renderLoop(canvas){
   const ctx=canvas.getContext('2d');
+  const cleanCanvas=document.getElementById('arCanvasClean');
+  const cctx=cleanCanvas.getContext('2d');
   const glowCache=new Map();
   function getGlow(sz){
     const k=Math.round(sz/8)*8;
@@ -320,10 +330,11 @@ function renderLoop(canvas){
     arTime+=1/60;
     const t=arTime,W=canvas.width,H=canvas.height;
     ctx.clearRect(0,0,W,H);
+    cctx.clearRect(0,0,W,H);
     objects.forEach(obj=>{
       if(!obj.img||!obj.img.complete||!obj.img.naturalWidth)return;
-      const bob=Math.sin(t*.9+obj.bob)*5+Math.sin(t*1.4+obj.bob*1.3)*2;
-      const tx=g.tiltX*16, ty=g.tiltY*12;
+      const bob=locked?0:(Math.sin(t*.9+obj.bob)*5+Math.sin(t*1.4+obj.bob*1.3)*2);
+      const tx=locked?0:g.tiltX*16, ty=locked?0:g.tiltY*12;
       const px=obj.x+tx, py=obj.y+ty+bob, hw=obj.size/2;
       ctx.save(); ctx.translate(px,py);
       // glow
@@ -333,6 +344,13 @@ function renderLoop(canvas){
       ctx.shadowColor='rgba(0,0,0,.65)'; ctx.shadowBlur=28; ctx.shadowOffsetY=14;
       ctx.drawImage(obj.img,-hw,-hw,obj.size,obj.size);
       ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+      // ── cleanCanvas: 枠なしで画像のみ描画（保存用）──
+      cctx.save(); cctx.translate(px,py);
+      cctx.shadowColor='rgba(0,0,0,.65)'; cctx.shadowBlur=28; cctx.shadowOffsetY=14;
+      cctx.drawImage(obj.img,-hw,-hw,obj.size,obj.size);
+      cctx.shadowColor='transparent'; cctx.shadowBlur=0; cctx.shadowOffsetY=0;
+      cctx.restore();
+      // ── arCanvas: 枠・コーナー表示用 ──
       // border
       ctx.strokeStyle='rgba(0,255,224,.55)'; ctx.lineWidth=1.5;
       ctx.strokeRect(-hw,-hw,obj.size,obj.size);
@@ -463,7 +481,8 @@ function initGestures(canvas){
 
 /* ── SCREENSHOT ── */
 document.getElementById('btnShot').addEventListener('click',()=>{
-  const v=document.getElementById('arVideo'),ac=document.getElementById('arCanvas');
+  const v=document.getElementById('arVideo');
+  const ac=document.getElementById('arCanvasClean'); // 枠なし
   const oc=document.createElement('canvas');oc.width=ac.width;oc.height=ac.height;
   const ox=oc.getContext('2d');ox.drawImage(v,0,0,ac.width,ac.height);ox.drawImage(ac,0,0);
   const url=oc.toDataURL('image/png');
@@ -479,18 +498,24 @@ function startRec(){
   const v=document.getElementById('arVideo'),ac=document.getElementById('arCanvas');
   const oc=document.createElement('canvas');oc.width=ac.width;oc.height=ac.height;
   const ox=oc.getContext('2d');
-  function cf(){ox.drawImage(v,0,0,ac.width,ac.height);ox.drawImage(ac,0,0);rec._rid=requestAnimationFrame(cf);}
+  const cleanAc=document.getElementById('arCanvasClean'); // 枠なし
+  function cf(){ox.drawImage(v,0,0,ac.width,ac.height);ox.drawImage(cleanAc,0,0);rec._rid=requestAnimationFrame(cf);}
   rec._rid=requestAnimationFrame(cf);
   const mime=['video/mp4','video/webm;codecs=vp9','video/webm'].find(m=>MediaRecorder.isTypeSupported(m))||'video/webm';
   rec.mr=new MediaRecorder(oc.captureStream(30),{mimeType:mime});
   rec.chunks=[];
   rec.mr.ondataavailable=e=>{if(e.data.size>0)rec.chunks.push(e.data);};
-  rec.mr.onstop=()=>{
+  rec.mr.onstop=async()=>{
     cancelAnimationFrame(rec._rid);
     const ext=mime.includes('mp4')?'mp4':'webm';
     const blob=new Blob(rec.chunks,{type:mime});
+    const fname=`ar-flash-${Date.now()}.${ext}`;
+    const file=new File([blob],fname,{type:mime});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],title:'AR.FLASH'}); URL.revokeObjectURL(''); return; }catch(e){}
+    }
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`ar-flash-${Date.now()}.${ext}`;a.click();
+    const a=document.createElement('a');a.href=url;a.download=fname;a.click();
     URL.revokeObjectURL(url);
   };
   rec.mr.start(100);rec.active=true;rec.t0=Date.now();
@@ -527,6 +552,16 @@ document.getElementById('btnChangeImg').addEventListener('click',()=>{
   inp.click();
 });
 document.getElementById('btnClose').addEventListener('click',closeAR);
+
+// 位置固定トグル
+document.getElementById('btnLock').addEventListener('click',()=>{
+  locked=!locked;
+  const btn=document.getElementById('btnLock');
+  btn.textContent = locked ? '🔒' : '🔓';
+  btn.style.borderColor = locked ? 'rgba(255,200,0,.5)' : 'rgba(255,255,255,.15)';
+  btn.style.boxShadow   = locked ? '0 0 12px rgba(255,200,0,.3)' : 'none';
+  toast(locked ? '📌 位置を固定しました' : '🔓 固定を解除しました');
+});
 window.addEventListener('resize',()=>{
   if(!arRunning)return;
   const c=document.getElementById('arCanvas');
