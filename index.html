@@ -497,7 +497,7 @@ input[type=range]::-webkit-slider-thumb{
   display:none;position:fixed;inset:0;z-index:200;background:#000;touch-action:none;
 }
 #arVideo{ position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
-#arCanvas{ position:absolute;inset:0;width:100%;height:100%;cursor:crosshair; }
+#arCanvas{ position:absolute;top:0;left:0;cursor:crosshair; }
 
 .ar-topbar{
   position:absolute;top:0;left:0;right:0;
@@ -1214,9 +1214,7 @@ async function launchAR(){
       if(h) h.classList.add('hide');
     }, 3500);
 
-    // デバッグ情報をtoastで表示
-    const dbg = state.imgEl;
-    toast(`AR起動 obj:${ar.objects.length} img:${dbg?dbg.naturalWidth+'x'+dbg.naturalHeight:'null'} canvas:${canvas.width}x${canvas.height}`);
+    toast('📱 AR起動 — 長押しで移動 / ピンチでサイズ変更');
   } catch(e){
     toast('カメラの許可が必要です');
     overlay.style.display = 'none';
